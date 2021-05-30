@@ -28,19 +28,21 @@ class BaseModel:
 
 
 class Alchemical:
-    def __init__(self, url=None, binds=None):
+    def __init__(self, url=None, binds=None, engine_options=None):
         self._include_sqlalchemy()
         self.lock = Lock()
         self.url = None
         self.binds = None
+        self.engine_options = {}
         self.engines = None
         self.table_binds = None
         if url:
-            self.initialize(url, binds=binds)
+            self.initialize(url, binds=binds, engine_options=engine_options)
 
-    def initialize(self, url, binds=None):
-        self.url = url
-        self.binds = binds
+    def initialize(self, url, binds=None, engine_options=None):
+        self.url = url or self.url
+        self.binds = binds or self.binds
+        self.engine_options = engine_options or self.engine_options
 
     def _include_sqlalchemy(self):
         class Meta(DeclarativeMeta):
@@ -59,10 +61,18 @@ class Alchemical:
             cls=BaseModel, metaclass=Meta)
 
     def _create_engines(self):
-        self.engines = {None: self.create_engine(self.url, future=True)}
+        options = (self.engine_options
+            if not callable(self.engine_options)
+            else self.engine_options(None))
+        options.setdefault('future', True)
+        self.engines = {None: self.create_engine(self.url, **options)}
         self.table_binds = {}
         for bind, url in (self.binds or {}).items():
-            self.engines[bind] = self.create_engine(url, future=True)
+            options = (self.engine_options
+                if not callable(self.engine_options)
+                else self.engine_options(bind))
+            options.setdefault('future', True)
+            self.engines[bind] = self.create_engine(url, **options)
             for table in self.get_tables_for_bind(bind):
                 self.table_binds[table] = self.engines[bind]
 
