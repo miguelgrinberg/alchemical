@@ -5,6 +5,7 @@ from threading import Lock
 import sqlalchemy
 import sqlalchemy.event
 import sqlalchemy.orm
+import sqlalchemy.ext.asyncio
 from sqlalchemy.orm.decl_api import DeclarativeMeta
 
 try:
@@ -56,25 +57,32 @@ class Alchemical:
             for key in module.__all__:
                 if not hasattr(self, key):
                     setattr(self, key, getattr(module, key))
-                    self.event = sqlalchemy.event
-                    self.Model = sqlalchemy.orm.declarative_base(
-            cls=BaseModel, metaclass=Meta)
+        for key in dir(sqlalchemy.ext.asyncio):
+            if (key == 'create_async_engine' or key[0].isupper()) and \
+                    not hasattr(self, key):
+                setattr(self, key, getattr(sqlalchemy.ext.asyncio, key))
+        self.event = sqlalchemy.event
+        self.Model = sqlalchemy.orm.declarative_base(cls=BaseModel,
+                                                     metaclass=Meta)
 
     def _create_engines(self):
         options = (self.engine_options
             if not callable(self.engine_options)
             else self.engine_options(None))
         options.setdefault('future', True)
-        self.engines = {None: self.create_engine(self.url, **options)}
+        self.engines = {None: self._create_engine(self.url, **options)}
         self.table_binds = {}
         for bind, url in (self.binds or {}).items():
             options = (self.engine_options
                 if not callable(self.engine_options)
                 else self.engine_options(bind))
             options.setdefault('future', True)
-            self.engines[bind] = self.create_engine(url, **options)
+            self.engines[bind] = self._create_engine(url, **options)
             for table in self.get_tables_for_bind(bind):
                 self.table_binds[table] = self.engines[bind]
+
+    def _create_engine(self, *args, **kwargs):
+        return self.create_engine(*args, **kwargs)
 
     @property
     def metadata(self):
