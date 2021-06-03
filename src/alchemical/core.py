@@ -8,11 +8,6 @@ import sqlalchemy.orm
 import sqlalchemy.ext.asyncio
 from sqlalchemy.orm.decl_api import DeclarativeMeta
 
-try:
-    from greenlet import getcurrent as _ident_func
-except ImportError:
-    from threading import get_ident as _ident_func
-
 
 class TableNamer:
     def __get__(self, obj, type):
@@ -66,16 +61,14 @@ class Alchemical:
                                                      metaclass=Meta)
 
     def _create_engines(self):
-        options = (self.engine_options
-            if not callable(self.engine_options)
-            else self.engine_options(None))
+        options = (self.engine_options if not callable(self.engine_options)
+                   else self.engine_options(None))
         options.setdefault('future', True)
         self.engines = {None: self._create_engine(self.url, **options)}
         self.table_binds = {}
         for bind, url in (self.binds or {}).items():
-            options = (self.engine_options
-                if not callable(self.engine_options)
-                else self.engine_options(bind))
+            options = (self.engine_options if not callable(self.engine_options)
+                       else self.engine_options(bind))
             options.setdefault('future', True)
             self.engines[bind] = self._create_engine(url, **options)
             for table in self.get_tables_for_bind(bind):
