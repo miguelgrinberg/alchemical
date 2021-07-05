@@ -38,6 +38,9 @@ class Alchemical:
     the :func:`Alchemical.initialize` method must be called later to perform
     the initialization.
     """
+
+    prefix_map = {'postgres': 'postgresql'}
+
     def __init__(self, url=None, binds=None, engine_options=None):
         self._include_sqlalchemy()
         self.lock = Lock()
@@ -91,18 +94,27 @@ class Alchemical:
         options = (self.engine_options if not callable(self.engine_options)
                    else self.engine_options(None))
         options.setdefault('future', True)
-        self.engines = {None: self._create_engine(self.url, **options)}
+        self.engines = {None: self._create_engine(
+            self._fix_url(self.url), **options)}
         self.table_binds = {}
         for bind, url in (self.binds or {}).items():
             options = (self.engine_options if not callable(self.engine_options)
                        else self.engine_options(bind))
             options.setdefault('future', True)
-            self.engines[bind] = self._create_engine(url, **options)
+            self.engines[bind] = self._create_engine(
+                self._fix_url(url), **options)
             for table in self.get_tables_for_bind(bind):
                 self.table_binds[table] = self.engines[bind]
 
-    def _create_engine(self, *args, **kwargs):
-        return self.create_engine(*args, **kwargs)
+    def _fix_url(self, url):
+        for prefix, updated_prefix in self.prefix_map.items():
+            if url.startswith(f'{prefix}://'):
+                url = f'{updated_prefix}://' + url[len(prefix) + 3:]
+                break
+        return url
+
+    def _create_engine(self, url, *args, **kwargs):
+        return self.create_engine(url, *args, **kwargs)
 
     @property
     def metadata(self):

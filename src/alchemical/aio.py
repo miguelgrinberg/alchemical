@@ -17,12 +17,20 @@ class AsyncAlchemical(Alchemical):
     the :func:`Alchemical.initialize` method must be called later to perform
     the initialization.
     """
-    def _create_engine(self, *args, **kwargs):
-        return self.create_async_engine(*args, **kwargs)
+
+    prefix_map = {
+        'sqlite': 'sqlite+aiosqlite',
+        'mysql': 'mysql+aiomysql',
+        'postgres': 'postgresql+asyncpg',
+        'postgresql': 'postgresql+asyncpg'
+    }
 
     def initialize(self, url, binds=None, engine_options=None):
         return super().initialize(url, binds=binds,
                                   engine_options=engine_options)
+
+    def _create_engine(self, url, *args, **kwargs):
+        return self.create_async_engine(url, *args, **kwargs)
 
     async def create_all(self):
         tables = self._get_tables_for_bind(None)
