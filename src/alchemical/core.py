@@ -24,6 +24,20 @@ class BaseModel:
 
 
 class Alchemical:
+    """Create a database instance.
+
+    :param url: the database URL.
+    :param binds: a dictionary with additional databases to manage with this
+                  instance. The keys are the names, and the values are the
+                  database URLs. A model is then assigned to a specific bind
+                  with the `__bind_key__` class attribute.
+    :param engine_options: a dictionary with additional engine options to
+                           pass to SQLAlchemy.
+
+    The database instances can be initialized without arguments, in which case
+    the :func:`Alchemical.initialize` method must be called later to perform
+    the initialization.
+    """
     def __init__(self, url=None, binds=None, engine_options=None):
         self._include_sqlalchemy()
         self.lock = Lock()
@@ -36,6 +50,19 @@ class Alchemical:
             self.initialize(url, binds=binds, engine_options=engine_options)
 
     def initialize(self, url, binds=None, engine_options=None):
+        """Initialize the database instance.
+
+        :param url: the database URL.
+        :param binds: a dictionary with additional databases to manage with
+                      this instance. The keys are the names, and the values are
+                      the database URLs. A model is then assigned to a specific
+                      bind with the `__bind_key__` class attribute.
+        :param engine_options: a dictionary with additional engine options to
+                               pass to SQLAlchemy.
+
+        This method must be used when the instance is created without
+        arguments.
+        """
         self.url = url or self.url
         self.binds = binds or self.binds
         self.engine_options = engine_options or self.engine_options
@@ -99,6 +126,11 @@ class Alchemical:
         return result
 
     def create_all(self):
+        """Create the database tables.
+
+        Only tables that do not already exist are created. Existing tables are
+        not modified.
+        """
         tables = self._get_tables_for_bind(None)
         self.Model.metadata.create_all(self.get_engine(), tables=tables)
         for bind in self.binds or {}:
@@ -107,6 +139,11 @@ class Alchemical:
                                            tables=tables)
 
     def drop_all(self):
+        """Drop all the database tables.
+
+        Note that this is a destructive operation; data stored in the
+        database will be deleted when this method is called.
+        """
         tables = self._get_tables_for_bind(None)
         self.Model.metadata.drop_all(self.get_engine(), tables=tables)
         for bind in self.binds or {}:
@@ -114,11 +151,20 @@ class Alchemical:
             self.Model.metadata.drop_all(self.get_engine(bind), tables=tables)
 
     def session(self):
+        """Return a database session."""
         return self.Session(bind=self.get_engine(), binds=self.table_binds,
                             future=True)
 
     @contextmanager
     def begin(self):
+        """Context manager for a database transaction.
+
+        Upon entering the context manager block, a new session is created and
+        a transaction started on it. If any errors occur inside the context
+        manager block, then the database session will be rolled back. If no
+        errors occur, the session is committed. In both cases the session is
+        then closed.
+        """
         with self.session() as session:
             with session.begin():
                 yield session
