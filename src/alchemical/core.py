@@ -163,7 +163,18 @@ class Alchemical:
             self.Model.metadata.drop_all(self.get_engine(bind), tables=tables)
 
     def session(self):
-        """Return a database session."""
+        """Return a database session.
+
+        The recommended way to use the SQLAlchemy session is as a context
+        manager::
+
+            with db.session() as session:
+                # work with the session here
+
+        The context manager automatically closes the session at the end. If
+        the session is handled without a context manager, ``session.close()``
+        must be called when the it isn't needed anymore.
+        """
         return self.Session(bind=self.get_engine(), binds=self.table_binds,
                             future=True)
 
@@ -176,6 +187,12 @@ class Alchemical:
         manager block, then the database session will be rolled back. If no
         errors occur, the session is committed. In both cases the session is
         then closed.
+
+        Example usage::
+
+            with db.begin() as session:
+                # work with the session here
+                # a commit (on success) or rollback (on error) is automatic
         """
         with self.session() as session:
             with session.begin():

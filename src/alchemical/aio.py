@@ -53,11 +53,37 @@ class AsyncAlchemical(Alchemical):
                                     tables=tables)
 
     def session(self):
+        """Return a database session.
+
+        The recommended way to use the SQLAlchemy session is as a context
+        manager::
+
+            async with db.session() as session:
+                # work with the session here
+
+        The context manager automatically closes the session at the end. If
+        the session is handled without a context manager, ``session.close()``
+        must be called when the it isn't needed anymore.
+        """
         return self.AsyncSession(bind=self.get_engine(),
                                  binds=self.table_binds, future=True)
 
     @asynccontextmanager
     async def begin(self):
+        """Context manager for a database transaction.
+
+        Upon entering the context manager block, a new session is created and
+        a transaction started on it. If any errors occur inside the context
+        manager block, then the database session will be rolled back. If no
+        errors occur, the session is committed. In both cases the session is
+        then closed.
+
+        Example usage::
+
+            async with db.begin() as session:
+                # work with the session here
+                # a commit (on success) or rollback (on error) is automatic
+        """
         async with self.session() as session:
             async with session.begin():
                 yield session
