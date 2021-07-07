@@ -9,7 +9,7 @@ import sqlalchemy.ext.asyncio
 from sqlalchemy.orm.decl_api import DeclarativeMeta
 
 
-class TableNamer:
+class TableNamer:  # pragma: no cover
     def __get__(self, obj, type):
         if type.__dict__.get('__tablename__') is None and \
                 type.__dict__.get('__table__') is None:
@@ -103,7 +103,7 @@ class Alchemical:
             options.setdefault('future', True)
             self.engines[bind] = self._create_engine(
                 self._fix_url(url), **options)
-            for table in self.get_tables_for_bind(bind):
+            for table in self._get_tables_for_bind(bind):
                 self.table_binds[table] = self.engines[bind]
 
     def _fix_url(self, url):
@@ -123,7 +123,7 @@ class Alchemical:
     def get_engine(self, bind=None):
         if self.engines is None:
             with self.lock:
-                if self.engines is None:
+                if self.engines is None:  # pragma: no cover
                     self._create_engines()
         return self.engines[bind]
 

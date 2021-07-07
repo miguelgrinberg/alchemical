@@ -1,12 +1,15 @@
 import sqlite3
 import unittest
+from flask import Flask
 import pytest
-from alchemical import Alchemical
+from alchemical.flask import Alchemical
 
 
 class TestCore(unittest.TestCase):
     def test_read_write(self):
-        db = Alchemical('sqlite://')
+        app = Flask(__name__)
+        app.config['ALCHEMICAL_DATABASE_URI'] = 'sqlite://'
+        db = Alchemical(app)
 
         class User(db.Model):
             id = db.Column(db.Integer, primary_key=True)
@@ -30,9 +33,12 @@ class TestCore(unittest.TestCase):
         assert len(all) == 0
 
     def test_binds(self):
+        app = Flask(__name__)
+        app.config['ALCHEMICAL_DATABASE_URI'] = 'sqlite://'
+        app.config['ALCHEMICAL_BINDS'] = \
+            {'one': 'sqlite://', 'two': 'sqlite://'}
         db = Alchemical()
-        db.initialize(
-            'sqlite://', binds={'one': 'sqlite://', 'two': 'sqlite://'})
+        db.init_app(app)
 
         class User(db.Model):
             __tablename__ = 'users'
