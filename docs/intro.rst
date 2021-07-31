@@ -43,9 +43,9 @@ a few users, and finally prints the users to the console.
 The next example implements the same application, but using ``asyncio``::
 
     import asyncio
-    from alchemical import AsyncAlchemical
+    from alchemical.aio import Alchemical
 
-    db = AsyncAlchemical('sqlite+aiosqlite:///users.sqlite')
+    db = Alchemical('sqlite+aiosqlite:///users.sqlite')
 
 
     class User(db.Model):

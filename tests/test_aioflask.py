@@ -1,14 +1,17 @@
 import asyncio
 import sqlite3
 import unittest
+from aioflask import Flask
 import pytest
-from alchemical.aio import Alchemical
+from alchemical.aioflask import Alchemical
 
 
-class TestAio(unittest.TestCase):
+class TestCore(unittest.TestCase):
     def test_read_write(self):
         async def main():
-            db = Alchemical('sqlite://')
+            app = Flask(__name__)
+            app.config['ALCHEMICAL_DATABASE_URI'] = 'sqlite://'
+            db = Alchemical(app)
 
             class User(db.Model):
                 id = db.Column(db.Integer, primary_key=True)
@@ -35,9 +38,12 @@ class TestAio(unittest.TestCase):
 
     def test_binds(self):
         async def main():
-            db = Alchemical(
-                'sqlite://', binds={'one': 'sqlite://', 'two': 'sqlite://'},
-                engine_options={'pool': None})
+            app = Flask(__name__)
+            app.config['ALCHEMICAL_DATABASE_URI'] = 'sqlite://'
+            app.config['ALCHEMICAL_BINDS'] = \
+                {'one': 'sqlite://', 'two': 'sqlite://'}
+            db = Alchemical()
+            db.init_app(app)
 
             class User(db.Model):
                 __tablename__ = 'users'

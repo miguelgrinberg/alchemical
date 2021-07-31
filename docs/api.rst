@@ -10,6 +10,6 @@ The Alchemical class
 The AsyncAlchemical class
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: alchemical.AsyncAlchemical
+.. autoclass:: alchemical.aio.Alchemical
    :members:
    :inherited-members:

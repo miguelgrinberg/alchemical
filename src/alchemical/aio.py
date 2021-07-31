@@ -1,8 +1,8 @@
 from contextlib import asynccontextmanager
-from .core import Alchemical
+from .core import Alchemical as BaseAlchemical
 
 
-class AsyncAlchemical(Alchemical):
+class Alchemical(BaseAlchemical):
     """Create a database instance.
 
     :param url: the database URL.
