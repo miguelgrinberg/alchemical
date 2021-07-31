@@ -1,5 +1,5 @@
-from flask import Flask
-from alchemical.flask import Alchemical
+from aioflask import Flask
+from alchemical.aioflask import Alchemical
 from flask_migrate import Migrate
 
 app = Flask(__name__)
@@ -15,14 +15,14 @@ class User(db.Model):
 
 
 @app.route('/')
-def index():
-    with db.session() as session:
-        users = session.execute(db.select(User)).scalars()
+async def index():
+    async with db.session() as session:
+        users = (await session.execute(db.select(User))).scalars()
         return 'Users: ' + ', '.join([u.name for u in users])
 
 
 @app.cli.command()
-def add():
+async def add():
     """Add test user."""
-    with db.begin() as session:
+    async with db.begin() as session:
         session.add(User(name='test'))
