@@ -63,7 +63,7 @@ class Alchemical(BaseAlchemical):
 
         The context manager automatically closes the session at the end. If
         the session is handled without a context manager, ``session.close()``
-        must be called when the it isn't needed anymore.
+        must be called when the session isn't needed anymore.
         """
         return self.AsyncSession(bind=self.get_engine(),
                                  binds=self.table_binds, future=True)
@@ -74,9 +74,8 @@ class Alchemical(BaseAlchemical):
 
         Upon entering the context manager block, a new session is created and
         a transaction started on it. If any errors occur inside the context
-        manager block, then the database session will be rolled back. If no
-        errors occur, the session is committed. In both cases the session is
-        then closed.
+        manager block, then the transaction is rolled back. If no errors occur,
+        the transaction is committed. In both cases the session is then closed.
 
         Example usage::
 

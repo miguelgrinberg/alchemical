@@ -2,7 +2,7 @@ What is Alchemical?
 -------------------
 
 Alchemical is a wrapper for SQLAlchemy that simplifies some aspects of
-SQLAlchemy. It is based on some of the implementation details of the
+its configuration. It is inspired by the
 `Flask-SQLAlchemy <https://flask-sqlalchemy.palletsprojects.com/en/2.x/>`_
 extension for Flask.
 
@@ -45,7 +45,7 @@ The next example implements the same application, but using ``asyncio``::
     import asyncio
     from alchemical.aio import Alchemical
 
-    db = Alchemical('sqlite+aiosqlite:///users.sqlite')
+    db = Alchemical('sqlite:///users.sqlite')
 
 
     class User(db.Model):

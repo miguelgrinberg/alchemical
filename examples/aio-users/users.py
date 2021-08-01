@@ -1,7 +1,7 @@
 import asyncio
-from alchemical import AsyncAlchemical
+from alchemical.aio import Alchemical
 
-db = AsyncAlchemical('sqlite:///users.sqlite')
+db = Alchemical('sqlite:///users.sqlite')
 
 
 class User(db.Model):
