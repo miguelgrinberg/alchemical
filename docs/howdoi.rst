@@ -34,11 +34,14 @@ follows::
     async with db.session() as session:
         # work with the session here
 
-When the session is created in this way, the session is automatically closed
-and returned to the session pool when the context manager block ends.
+When the session is created in this way, a database transaction is
+automatically initiated when required, and the ``session.flush()``,
+``session.commit()`` and ``session.rollback()`` methods can be used as
+necessary. The session is automatically closed and returned to the session pool
+when the context manager block ends.
 
-Alternatively, you can create a session without the context manager and close
-it manually::
+You can also create a session without the context manager and close it
+manually::
 
     session = db.session()
     # work with the session here
@@ -53,7 +56,9 @@ And for the asynchronous version::
 ... start a database transaction?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can create a session and start a transaction on it as follows::
+See the previous question for implicitly starting a transaction when one is
+needed. To create a session and explicitly start a transaction on it at the
+same time, use the ``db.begin()`` method::
 
     with db.begin() as session:
         # work with the session here
@@ -64,10 +69,11 @@ Or for the asynchronous version of Alchemical::
         # work with the session here
 
 The transaction is automatically committed if the context manager block
-completes, or rolled back if an error occurs. The session is then closed.
+completes successfully, or rolled back if an error occurs. The session is then
+closed.
 
-In cases where a session has already been created, the ``begin()`` methodn can
-be called on it to start a transaction::
+In cases where a session has already been created, the ``begin()`` method can
+be called on it to explicitly start a transaction::
 
     with session.begin():
         # work with the session here
@@ -80,24 +86,47 @@ Or with the asynchronous version::
 As in the previous example, the transaction is committed on success, or rolled
 back on error. The session in this case is not closed.
 
+Calling ``begin()`` on a session object only works if an implicit transaction
+hasn't been started on the session yet. For a session that already has an
+active transaction, the ``begin_nested()`` method can be used to create a
+nested transaction or save point::
+
+    with session.begin_nested():
+        # work with the session here
+
+Or with the asynchronous version::
+
+    async with session.begin_nested():
+        # work with the session here
+    
 ... save an object to a database table?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To add a new object to the database, use ``session.add()`` inside a
-transaction::
+To add a new object to the database, use ``session.add()``::
 
+    # with a transaction's implicit commit
     with db.begin() as session:
         new_user = User(name='mary')
         session.add(new_user)
 
+    # with an explicit commit
+    with db.session() as session:
+        new_user - User(name='mary')
+        session.add(new_user)
+        session.commit()
+
 If you are using the asynchronous version of Alchemical::
 
+    # with a transaction's implicit commit
     async with db.begin() as session:
         new_user = User(name='mary')
         session.add(new_user)
 
-There is no need to commit, as the transaction automatically commits when the
-``with`` block reaches the end.
+    # with an explicit commit
+    async with db.session() as session:
+        new_user = User(name='mary')
+        session.add(new_user)
+        await session.commit()
 
 ... retrieve an object by its primary key?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -144,17 +173,29 @@ method converts each row to a single object for convenience.
 To modify a database object, first retrieve, then modify it within a
 transaction::
 
+    # with an implicit commit
     with db.begin() as session:
         user = session.get(User, 2)
         user.name = 'john'
 
+    # with an explicit commit
+    with db.session() as session:
+        user = session.get(User, 2)
+        user.name = 'john'
+        session.commit()
+
 With the asynchronous version::
 
+    # with an implicit commit
     async with db.begin() as session:
         user = await session.get(User, 2)
         user.name = 'john'
 
-When the transaction is committed the changes will be saved to the database.
+    # with an explicit commit
+    async with db.session() as session:
+        user = await session.get(User, 2)
+        user.name = 'john'
+        await session.commit()
 
 ... delete an object from a database table?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -162,18 +203,29 @@ When the transaction is committed the changes will be saved to the database.
 To remove an object from the database, use ``session.delete()`` inside a
 transaction::
 
+    # implicit commit
     with db.begin() as session:
         user = session.get(User, 2)
         session.delete(user)
 
+    # explicit commit
+    with db.session() as session:
+        user = session.get(User, 2)
+        session.delete(user)
+        session.commit()
+
 If you are using the asynchronous version::
 
+    # implicit commit
     async with db.begin() as session:
         user = await session.get(User, 2)
-        session.delete(user)
+        await session.delete(user)
 
-The transaction is automatically committed when the ``with`` block reaches the
-end.
+    # explicit commit
+    async with db.begin() as session:
+        user = await session.get(User, 2)
+        await session.delete(user)
+        await session.commit()
 
 ... run an arbitrary SQL statement on the database?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -190,7 +242,8 @@ With the asynchronous version::
         sql = db.text('select * from user;')
         results = (await session.execute(sql)).all()
 
-The asynchronous version also supports streaming for raw SQL statements::
+The asynchronous version also supports streaming the results of a raw SQL
+statement::
 
     async with db.session() as session:
         sql = db.text('select * from user;')
