@@ -1,5 +1,14 @@
 # Alchemical change log
 
+**Release 0.3.0** - 2021-08-03
+
+- Add support for aioflask ([commit](https://github.com/miguelgrinberg/alchemical/commit/f5c0e2b424b39ab129789c2e707d49ecfb117b13))
+- Added a "How do I ...?" to the documentation ([commit](https://github.com/miguelgrinberg/alchemical/commit/6c1659f9041ad1bac14bb87c6c1cc7fa929f6622))
+- Documentation updates ([commit](https://github.com/miguelgrinberg/alchemical/commit/fc13d12bd9014a7fa56f42c61012e08a85497c76))
+- Example updates ([commit](https://github.com/miguelgrinberg/alchemical/commit/6d48822d069386d8bf4529b90ef678695faae158))
+- aioflask examples ([commit](https://github.com/miguelgrinberg/alchemical/commit/d4d196eabf0687b909de112291d71950f61a9096))
+- Remaining unit tests ([commit](https://github.com/miguelgrinberg/alchemical/commit/7fdb15a10a80dc4c01642cff35f22985761abbcd))
+
 **Release 0.2.0** - 2021-07-06
 
 - Asyncio support ([commit](https://github.com/miguelgrinberg/alchemical/commit/1890ced7c2b60a8d165dd02a7a8762bcc4a2cad1))
