@@ -20,14 +20,14 @@ class TestAio(unittest.TestCase):
                 for name in ['mary', 'joe', 'susan']:
                     session.add(User(name=name))
 
-            async with db.session() as session:
+            async with db.Session() as session:
                 all = (await session.execute(db.select(User))).scalars().all()
             assert len(all) == 3
 
             await db.drop_all()
             await db.create_all()
 
-            async with db.session() as session:
+            async with db.Session() as session:
                 all = (await session.execute(db.select(User))).scalars().all()
             assert len(all) == 0
 
@@ -83,7 +83,7 @@ class TestAio(unittest.TestCase):
                 assert cur.fetchall() == [(1, 'two')]
                 conn.close()
 
-            async with db.session() as session:
+            async with db.Session() as session:
                 await session.run_sync(check)
 
             await db.drop_all()
@@ -107,7 +107,7 @@ class TestAio(unittest.TestCase):
                     cur.execute('select * from user2;')
                 conn.close()
 
-            async with db.session() as session:
+            async with db.Session() as session:
                 await session.run_sync(check_empty)
 
         asyncio.run(main())

@@ -9,7 +9,7 @@ class Alchemical(BaseAlchemical):
     :param binds: a dictionary with additional databases to manage with this
                   instance. The keys are the names, and the values are the
                   database URLs. A model is then assigned to a specific bind
-                  with the `__bind_key__` class attribute.
+                  with the ``__bind_key__`` class attribute.
     :param engine_options: a dictionary with additional engine options to
                            pass to SQLAlchemy.
 
@@ -26,8 +26,8 @@ class Alchemical(BaseAlchemical):
     }
 
     def initialize(self, url, binds=None, engine_options=None):
-        return super().initialize(url, binds=binds,
-                                  engine_options=engine_options)
+        super().initialize(url, binds=binds, engine_options=engine_options)
+        self.session_class = self.AsyncSession
 
     def _create_engine(self, url, *args, **kwargs):
         return self.create_async_engine(url, *args, **kwargs)
@@ -52,21 +52,25 @@ class Alchemical(BaseAlchemical):
                 await conn.run_sync(self.Model.metadata.drop_all,
                                     tables=tables)
 
-    def session(self):
+    def Session(self):
         """Return a database session.
 
         The recommended way to use the SQLAlchemy session is as a context
         manager::
 
-            async with db.session() as session:
+            async with db.Session() as session:
                 # work with the session here
 
-        The context manager automatically closes the session at the end. If
-        the session is handled without a context manager, ``session.close()``
-        must be called when the session isn't needed anymore.
+        The context manager automatically closes the session at the end. A
+        session can also be created without a context manager::
+
+            session = db.Session()
+
+        When the session is created in this way, ``session.close()`` must be
+        called when the session isn't needed anymore.
         """
-        return self.AsyncSession(bind=self.get_engine(),
-                                 binds=self.table_binds, future=True)
+        return self.session_class(
+            bind=self.get_engine(), binds=self.table_binds, future=True)
 
     @asynccontextmanager
     async def begin(self):
@@ -83,6 +87,6 @@ class Alchemical(BaseAlchemical):
                 # work with the session here
                 # a commit (on success) or rollback (on error) is automatic
         """
-        async with self.session() as session:
+        async with self.Session() as session:
             async with session.begin():
                 yield session

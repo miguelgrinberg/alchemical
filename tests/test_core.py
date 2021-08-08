@@ -18,14 +18,14 @@ class TestCore(unittest.TestCase):
             for name in ['mary', 'joe', 'susan']:
                 session.add(User(name=name))
 
-        with db.session() as session:
+        with db.Session() as session:
             all = session.execute(db.select(User)).scalars().all()
         assert len(all) == 3
 
         db.drop_all()
         db.create_all()
 
-        with db.session() as session:
+        with db.Session() as session:
             all = session.execute(db.select(User)).scalars().all()
         assert len(all) == 0
 

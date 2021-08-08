@@ -30,7 +30,7 @@ class Alchemical:
     :param binds: a dictionary with additional databases to manage with this
                   instance. The keys are the names, and the values are the
                   database URLs. A model is then assigned to a specific bind
-                  with the `__bind_key__` class attribute.
+                  with the ``__bind_key__`` class attribute.
     :param engine_options: a dictionary with additional engine options to
                            pass to SQLAlchemy.
 
@@ -69,6 +69,7 @@ class Alchemical:
         self.url = url or self.url
         self.binds = binds or self.binds
         self.engine_options = engine_options or self.engine_options
+        self.session_class = sqlalchemy.orm.Session
 
     def _include_sqlalchemy(self):
         class Meta(DeclarativeMeta):
@@ -167,21 +168,25 @@ class Alchemical:
             tables = self._get_tables_for_bind(bind)
             self.Model.metadata.drop_all(self.get_engine(bind), tables=tables)
 
-    def session(self):
+    def Session(self):
         """Return a database session.
 
         The recommended way to use the SQLAlchemy session is as a context
         manager::
 
-            with db.session() as session:
+            with db.Session() as session:
                 # work with the session here
 
-        The context manager automatically closes the session at the end. If
-        the session is handled without a context manager, ``session.close()``
-        must be called when the session isn't needed anymore.
+        The context manager automatically closes the session at the end. A
+        session can also be created without a context manager::
+
+            session = db.Session()
+
+        When the session is created in this way, ``session.close()`` must be
+        called when the session isn't needed anymore.
         """
-        return self.Session(bind=self.get_engine(), binds=self.table_binds,
-                            future=True)
+        return self.session_class(
+            bind=self.get_engine(), binds=self.table_binds, future=True)
 
     @contextmanager
     def begin(self):
@@ -198,6 +203,6 @@ class Alchemical:
                 # work with the session here
                 # a commit (on success) or rollback (on error) is automatic
         """
-        with self.session() as session:
+        with self.Session() as session:
             with session.begin():
                 yield session
