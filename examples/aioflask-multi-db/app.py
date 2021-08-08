@@ -29,7 +29,7 @@ async def index():
         users = (await session.execute(db.select(User))).scalars()
         groups = (await session.execute(db.select(Group))).scalars()
         return ('Users: ' + ', '.join([u.name for u in users]) +
-            '<br>Groups: ' + ', '.join([g.name for g in groups]))
+                '<br>Groups: ' + ', '.join([g.name for g in groups]))
 
 
 @app.cli.command()
