@@ -8,6 +8,7 @@ from flask_login import LoginManager
 
 db = Alchemical()
 login = LoginManager()
+login.login_view = 'auth.login'
 
 
 def create_app(test_config=None):

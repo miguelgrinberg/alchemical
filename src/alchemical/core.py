@@ -4,6 +4,7 @@ from threading import Lock
 
 import sqlalchemy
 import sqlalchemy.event
+import sqlalchemy.exc
 import sqlalchemy.orm
 import sqlalchemy.ext.asyncio
 from sqlalchemy.orm.decl_api import DeclarativeMeta
@@ -83,10 +84,11 @@ class Alchemical:
             for key in module.__all__:
                 if not hasattr(self, key):
                     setattr(self, key, getattr(module, key))
-        for key in dir(sqlalchemy.ext.asyncio):
-            if (key == 'create_async_engine' or key[0].isupper()) and \
-                    not hasattr(self, key):
-                setattr(self, key, getattr(sqlalchemy.ext.asyncio, key))
+        for module in (sqlalchemy.ext.asyncio, sqlalchemy.exc):
+            for key in dir(module):
+                if (key == 'create_async_engine' or key[0].isupper()) and \
+                        not hasattr(self, key):
+                    setattr(self, key, getattr(module, key))
         self.event = sqlalchemy.event
         self.Model = sqlalchemy.orm.declarative_base(cls=BaseModel,
                                                      metaclass=Meta)
