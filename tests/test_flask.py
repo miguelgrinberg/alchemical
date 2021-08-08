@@ -28,7 +28,7 @@ class User2(db.Model):
 class TestFlask(unittest.TestCase):
     def test_read_write(self):
         app = Flask(__name__)
-        app.config['ALCHEMICAL_DATABASE_URI'] = 'sqlite://'
+        app.config['ALCHEMICAL_DATABASE_URL'] = 'sqlite://'
         db.init_app(app)
 
         db.drop_all()
@@ -51,7 +51,7 @@ class TestFlask(unittest.TestCase):
 
     def test_binds(self):
         app = Flask(__name__)
-        app.config['ALCHEMICAL_DATABASE_URI'] = 'sqlite://'
+        app.config['ALCHEMICAL_DATABASE_URL'] = 'sqlite://'
         app.config['ALCHEMICAL_BINDS'] = \
             {'one': 'sqlite://', 'two': 'sqlite://'}
         db.init_app(app)
@@ -106,7 +106,7 @@ class TestFlask(unittest.TestCase):
 
     def test_db_session(self):
         app = Flask(__name__)
-        app.config['ALCHEMICAL_DATABASE_URI'] = 'sqlite://'
+        app.config['ALCHEMICAL_DATABASE_URL'] = 'sqlite://'
         db.init_app(app)
 
         db.drop_all()
@@ -129,7 +129,7 @@ class TestFlask(unittest.TestCase):
 
     def test_db_session_autocommit(self):
         app = Flask(__name__)
-        app.config['ALCHEMICAL_DATABASE_URI'] = 'sqlite://'
+        app.config['ALCHEMICAL_DATABASE_URL'] = 'sqlite://'
         app.config['ALCHEMICAL_AUTOCOMMIT'] = True
         db.init_app(app)
 
@@ -143,3 +143,13 @@ class TestFlask(unittest.TestCase):
         with db.Session() as session:
             all = session.execute(db.select(User)).scalars().all()
         assert len(all) == 3
+
+    def test_bad_config(self):
+        app = Flask(__name__)
+        with pytest.raises(RuntimeError):
+            db.init_app(app)
+
+    def test_alternate_config(self):
+        app = Flask(__name__)
+        app.config['ALCHEMICAL_DATABASE_URI'] = 'sqlite://'
+        db.init_app(app)  # should not raise
