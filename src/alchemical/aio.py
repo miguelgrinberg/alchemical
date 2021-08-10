@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+from sqlalchemy.util.concurrency import greenlet_spawn
 from .core import Alchemical as BaseAlchemical
 
 
@@ -25,7 +26,24 @@ class Alchemical(BaseAlchemical):
         'postgresql': 'postgresql+asyncpg'
     }
 
+    def __init__(self, url=None, binds=None, engine_options=None):
+        super().__init__(url=url, binds=binds, engine_options=engine_options)
+        self._sync = None
+
     def initialize(self, url, binds=None, engine_options=None):
+        """Initialize the database instance.
+
+        :param url: the database URL.
+        :param binds: a dictionary with additional databases to manage with
+                      this instance. The keys are the names, and the values are
+                      the database URLs. A model is then assigned to a specific
+                      bind with the `__bind_key__` class attribute.
+        :param engine_options: a dictionary with additional engine options to
+                               pass to SQLAlchemy.
+
+        This method must be used when the instance is created without
+        arguments.
+        """
         super().initialize(url, binds=binds, engine_options=engine_options)
         self.session_class = self.AsyncSession
 
@@ -33,24 +51,30 @@ class Alchemical(BaseAlchemical):
         return self.create_async_engine(url, *args, **kwargs)
 
     async def create_all(self):
-        tables = self._get_tables_for_bind(None)
-        async with self.get_engine().begin() as conn:
-            await conn.run_sync(self.Model.metadata.create_all, tables=tables)
-        for bind in self.binds or {}:
-            tables = self._get_tables_for_bind(bind)
-            async with self.get_engine(bind).begin() as conn:
-                await conn.run_sync(self.Model.metadata.create_all,
-                                    tables=tables)
+        """Create the database tables.
+
+        Only tables that do not already exist are created. Existing tables are
+        not modified.
+
+        Note: this method is a coroutine.
+        """
+        def sync_create_all(db):
+            db.create_all()
+
+        await self.run_sync(sync_create_all)
 
     async def drop_all(self):
-        tables = self._get_tables_for_bind(None)
-        async with self.get_engine().begin() as conn:
-            await conn.run_sync(self.Model.metadata.drop_all, tables=tables)
-        for bind in self.binds or {}:
-            tables = self._get_tables_for_bind(bind)
-            async with self.get_engine(bind).begin() as conn:
-                await conn.run_sync(self.Model.metadata.drop_all,
-                                    tables=tables)
+        """Drop all the database tables.
+
+        Note that this is a destructive operation; data stored in the
+        database will be deleted when this method is called.
+
+        Note: this method is a coroutine.
+        """
+        def sync_drop_all(db):
+            db.drop_all()
+
+        await self.run_sync(sync_drop_all)
 
     def Session(self):
         """Return a database session.
@@ -90,3 +114,32 @@ class Alchemical(BaseAlchemical):
         async with self.Session() as session:
             async with session.begin():
                 yield session
+
+    async def run_sync(self, f, *args, **kwargs):  # pragma: no cover
+        """Run a function using a synchronous version of this object.
+
+        This method can be used to start a synchronous function under the
+        SQLALchemy sync/async compatibility layer based on greenlets. The
+        function receives a sync version of the Alchemical object as first
+        argument.
+
+        Applications would not normally need to use this method, which is
+        used internally to support some operations that do not currently have
+        an awaitable interface. For more information, search for ``run_sync``
+        in the SQLAlchemy documentation.
+
+        Note: this method is a coroutine.
+        """
+        if self._sync is None:
+            self._sync = BaseAlchemical(url=self.url, binds=self.binds,
+                                        engine_options=self.engine_options)
+            self._sync.Model = self.Model  # use the same declarative base
+            self.get_engine()  # this makes sure engines are created
+            self._sync.engines = {bind: engine.sync_engine
+                                  for bind, engine in self.engines.items()}
+            self._sync.table_binds = {
+                table: engine.sync_engine
+                for table, engine in self.table_binds.items()}
+
+        return await greenlet_spawn(f, self._sync, *args, **kwargs)
+
