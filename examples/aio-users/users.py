@@ -20,7 +20,7 @@ async def main():
         for name in ['mary', 'joe', 'susan']:
             session.add(User(name=name))
 
-    async with db.session() as session:
+    async with db.Session() as session:
         print((await session.execute(db.select(User))).scalars().all())
 
 

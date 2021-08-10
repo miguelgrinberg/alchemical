@@ -18,5 +18,5 @@ with db.begin() as session:
     for name in ['mary', 'joe', 'susan']:
         session.add(User(name=name))
 
-with db.session() as session:
+with db.Session() as session:
     print(session.execute(db.select(User)).scalars().all())
