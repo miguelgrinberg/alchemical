@@ -1,11 +1,11 @@
-from flask import Blueprint
-from flask import flash
-from flask import redirect
-from flask import render_template
-from flask import request
-from flask import url_for
-from flask_login import login_user
-from flask_login import logout_user
+from aioflask import Blueprint
+from aioflask import flash
+from aioflask import redirect
+from aioflask import render_template
+from aioflask import request
+from aioflask import url_for
+from aioflask.patched.flask_login import login_user
+from aioflask.patched.flask_login import logout_user
 
 from flaskr import db, login
 from flaskr.models import User
@@ -14,12 +14,12 @@ bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 
 @login.user_loader
-def load_user(id):
-    return db.session.get(User, int(id))
+async def load_user(id):
+    return await db.session.get(User, int(id))
 
 
 @bp.route("/register", methods=("GET", "POST"))
-def register():
+async def register():
     """Register a new user.
     Validates that the username is not already taken. Hashes the
     password for security.
@@ -37,7 +37,7 @@ def register():
         if error is None:
             try:
                 db.session.add(User(username=username, password=password))
-                db.session.commit()
+                await db.session.commit()
             except db.IntegrityError:
                 # The username was already taken, which caused the
                 # commit to fail. Show a validation error.
@@ -48,19 +48,19 @@ def register():
 
         flash(error)
 
-    return render_template("auth/register.html")
+    return await render_template("auth/register.html")
 
 
 @bp.route("/login", methods=("GET", "POST"))
-def login():
+async def login():
     """Log in a registered user by adding the user id to the session."""
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
         error = None
 
-        user = db.session.execute(db.select(User).filter_by(
-            username=username)).scalars().first()
+        user = (await db.session.execute(db.select(User).filter_by(
+            username=username))).scalars().first()
 
         if user is None:
             error = "Incorrect username."
@@ -74,11 +74,11 @@ def login():
 
         flash(error)
 
-    return render_template("auth/login.html")
+    return await render_template("auth/login.html")
 
 
 @bp.route("/logout")
-def logout():
+async def logout():
     """Clear the current session, including the stored user id."""
     logout_user()
     return redirect(url_for("index"))

@@ -142,4 +142,3 @@ class Alchemical(BaseAlchemical):
                 for table, engine in self.table_binds.items()}
 
         return await greenlet_spawn(f, self._sync, *args, **kwargs)
-
