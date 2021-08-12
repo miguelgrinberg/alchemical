@@ -56,8 +56,8 @@ async def test_create(client, auth, app):
     await client.post("/create", data={"title": "created", "body": ""})
 
     async with app.app_context():
-        assert (await db.session.execute(db.select(
-            db.func.count()).select_from(Post))).scalars().first() == 2
+        query = db.select(db.func.count()).select_from(Post)
+        assert (await db.session.execute(query)).scalar() == 2
 
 
 @pytest.mark.asyncio

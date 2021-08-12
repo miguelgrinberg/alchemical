@@ -52,8 +52,8 @@ def test_create(client, auth, app):
     client.post("/create", data={"title": "created", "body": ""})
 
     with app.app_context():
-        assert db.session.execute(db.select(db.func.count()).select_from(
-            Post)).scalars().first() == 2
+        query = db.select(db.func.count()).select_from(Post)
+        assert db.session.execute(query).scalar() == 2
 
 
 def test_update(client, auth, app):

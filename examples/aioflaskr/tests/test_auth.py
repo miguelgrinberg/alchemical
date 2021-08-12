@@ -16,8 +16,8 @@ async def test_register(client, app):
 
     # test that the user was inserted into the database
     async with app.app_context():
-        assert (await db.session.execute(db.select(User).filter_by(
-            username="a"))).first() is not None
+        query = db.select(User).filter_by(username="a")
+        assert (await db.session.execute(query)).scalar() is not None
 
 
 def test_user_password(app):
