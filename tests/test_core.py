@@ -13,6 +13,7 @@ class TestCore(unittest.TestCase):
             name = db.Column(db.String(128))
 
         db.create_all()
+        assert db.metadata == db.Model.metadata
 
         with db.begin() as session:
             for name in ['mary', 'joe', 'susan']:
@@ -40,7 +41,7 @@ class TestCore(unittest.TestCase):
             name = db.Column(db.String(128))
 
         class User1(db.Model):
-            __tablename__ = 'users1'
+            __tablename__ = 'users'
             __bind_key__ = 'one'
             id = db.Column(db.Integer, primary_key=True)
             name = db.Column(db.String(128))
@@ -49,15 +50,29 @@ class TestCore(unittest.TestCase):
             __bind_key__ = 'two'
             id = db.Column(db.Integer, primary_key=True)
             name = db.Column(db.String(128))
+            addresses = db.relationship('Address', back_populates='user')
+
+        class Address(db.Model):
+            __bind_key__ = 'two'
+            id = db.Column(db.Integer, primary_key=True)
+            name = db.Column(db.String(128))
+            user_id = db.Column(db.Integer, db.ForeignKey('user2.id'))
+            user = db.relationship('User2', back_populates='addresses')
 
         db.create_all()
         assert db.bind_names() == ['one', 'two']
+        assert db.metadata.tables.keys() == {'users', 'user2', 'address'}
 
         with db.begin() as session:
             user = User(name='main')
             user1 = User1(name='one')
             user2 = User2(name='two')
-            session.add_all([user, user1, user2])
+            user3 = User2(name='three')
+            address1 = Address(name='address1')
+            address2 = Address(name='address2')
+            address1.user = user3
+            address2.user = user3
+            session.add_all([user, user1, user2, user3, address1, address2])
 
         conn = db.get_engine().pool.connect()
         cur = conn.cursor()
@@ -67,14 +82,17 @@ class TestCore(unittest.TestCase):
 
         conn = db.get_engine(bind='one').pool.connect()
         cur = conn.cursor()
-        cur.execute('select * from users1;')
+        cur.execute('select * from users;')
         assert cur.fetchall() == [(1, 'one')]
         conn.close()
 
         conn = db.get_engine(bind='two').pool.connect()
         cur = conn.cursor()
         cur.execute('select * from user2;')
-        assert cur.fetchall() == [(1, 'two')]
+        assert cur.fetchall() == [(1, 'two'), (2, 'three')]
+
+        cur.execute('select * from address;')
+        assert cur.fetchall() == [(1, 'address1', 2), (2, 'address2', 2)]
         conn.close()
 
         db.drop_all()
@@ -88,7 +106,7 @@ class TestCore(unittest.TestCase):
         conn = db.get_engine(bind='one').pool.connect()
         cur = conn.cursor()
         with pytest.raises(sqlite3.OperationalError):
-            cur.execute('select * from users1;')
+            cur.execute('select * from users;')
         conn.close()
 
         conn = db.get_engine(bind='two').pool.connect()

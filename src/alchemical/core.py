@@ -49,6 +49,7 @@ class Alchemical:
         self.binds = None
         self.engine_options = {}
         self.engines = None
+        self.metadatas = {}
         self.table_binds = None
         if url:
             self.initialize(url, binds=binds, engine_options=engine_options)
@@ -71,11 +72,16 @@ class Alchemical:
         self.binds = binds or self.binds
         self.engine_options = engine_options or self.engine_options
         self.session_class = sqlalchemy.orm.Session
+        self.metadatas[None] = self.Model.metadata
 
     def _include_sqlalchemy(self):
         class Meta(DeclarativeMeta):
             def __init__(cls, name, bases, d):
                 bind_key = d.pop('__bind_key__', None)
+                if bind_key:
+                    if bind_key not in self.metadatas:
+                        self.metadatas[bind_key] = self.MetaData()
+                    cls.metadata = self.metadatas[bind_key]
                 super().__init__(name, bases, d)
                 if bind_key and hasattr(cls, '__table__'):
                     cls.__table__.info['bind_key'] = bind_key
@@ -106,7 +112,7 @@ class Alchemical:
             options.setdefault('future', True)
             self.engines[bind] = self._create_engine(
                 self._fix_url(url), **options)
-            for table in self._get_tables_for_bind(bind):
+            for table in self.metadatas[bind].tables.values():
                 self.table_binds[table] = self.engines[bind]
 
     def _fix_url(self, url):
@@ -121,7 +127,17 @@ class Alchemical:
 
     @property
     def metadata(self):
-        return self.Model.metadata
+        # Only for compatibility with Flask-SQLAlchemy.
+        # The self.metadatas dictionary indexed by bind should be preferred.
+        if self.binds is None or len(self.binds) == 0:
+            return self.Model.metadata
+
+        # Flask-SQLAlchemy puts all the binds in a single metadata instance
+        m = self.MetaData()
+        for metadata in self.metadatas.values():
+            for table in metadata.tables.values():
+                table.to_metadata(m)
+        return m
 
     def get_engine(self, bind=None):
         """Return the SQLAlchemy engine object.
@@ -138,25 +154,15 @@ class Alchemical:
     def bind_names(self):
         return [bind for bind in self.engines if bind is not None]
 
-    def _get_tables_for_bind(self, bind=None):
-        result = []
-        for table in self.metadata.tables.values():
-            if table.info.get("bind_key") == bind:
-                result.append(table)
-        return result
-
     def create_all(self):
         """Create the database tables.
 
         Only tables that do not already exist are created. Existing tables are
         not modified.
         """
-        tables = self._get_tables_for_bind(None)
-        self.Model.metadata.create_all(self.get_engine(), tables=tables)
+        self.metadatas[None].create_all(self.get_engine())
         for bind in self.binds or {}:
-            tables = self._get_tables_for_bind(bind)
-            self.Model.metadata.create_all(self.get_engine(bind),
-                                           tables=tables)
+            self.metadatas[bind].create_all(self.get_engine(bind))
 
     def drop_all(self):
         """Drop all the database tables.
@@ -164,11 +170,9 @@ class Alchemical:
         Note that this is a destructive operation; data stored in the
         database will be deleted when this method is called.
         """
-        tables = self._get_tables_for_bind(None)
-        self.Model.metadata.drop_all(self.get_engine(), tables=tables)
+        self.metadatas[None].drop_all(self.get_engine())
         for bind in self.binds or {}:
-            tables = self._get_tables_for_bind(bind)
-            self.Model.metadata.drop_all(self.get_engine(bind), tables=tables)
+            self.metadatas[bind].drop_all(self.get_engine(bind))
 
     def Session(self):
         """Return a database session.

@@ -58,8 +58,8 @@ class Alchemical(BaseAlchemical):
 
         Note: this method is a coroutine.
         """
-        def sync_create_all(db):
-            db.create_all()
+        def sync_create_all(sync_db):
+            sync_db.create_all()
 
         await self.run_sync(sync_create_all)
 
@@ -71,8 +71,8 @@ class Alchemical(BaseAlchemical):
 
         Note: this method is a coroutine.
         """
-        def sync_drop_all(db):
-            db.drop_all()
+        def sync_drop_all(sync_db):
+            sync_db.drop_all()
 
         await self.run_sync(sync_drop_all)
 
@@ -134,6 +134,7 @@ class Alchemical(BaseAlchemical):
             self._sync = BaseAlchemical(url=self.url, binds=self.binds,
                                         engine_options=self.engine_options)
             self._sync.Model = self.Model  # use the same declarative base
+            self._sync.metadatas = self.metadatas
             self.get_engine()  # this makes sure engines are created
             self._sync.engines = {bind: engine.sync_engine
                                   for bind, engine in self.engines.items()}
