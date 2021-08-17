@@ -51,10 +51,7 @@ def create_app(test_config=None):
     app.register_blueprint(blog.bp)
 
     # make "index" point at "/", which is handled by "blog.index"
-    @app.route('/')
-    async def index():
-        from aioflask import redirect, url_for
-        return redirect(url_for('blog.index'))
+    app.add_url_rule("/", endpoint="index")
 
     return app
 

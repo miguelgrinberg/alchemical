@@ -2,22 +2,12 @@ import asyncio
 from datetime import datetime
 
 import pytest
-from greenletio.core import bridge
 
 from flaskr import create_app
 from flaskr import db
 from flaskr import init_db
 from flaskr.models import User
 from flaskr.models import Post
-
-
-@pytest.fixture
-def event_loop(request):
-    bridge.reset()
-    loop = asyncio.get_event_loop()
-    yield loop
-    bridge.stop()
-    loop.close()
 
 
 @pytest.fixture
