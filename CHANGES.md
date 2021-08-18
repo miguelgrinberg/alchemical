@@ -1,5 +1,13 @@
 # Alchemical change log
 
+**Release 0.4.0** - 2021-08-18
+
+- Added db.session similar to Flask-SQLAlchemy ([commit](https://github.com/miguelgrinberg/alchemical/commit/a66f9bdac6a45aefb71fbc229598a1779f6e3f1e))
+- Add a run_sync method to the asyncio class ([commit](https://github.com/miguelgrinberg/alchemical/commit/095ff759b48499328e1a53b0b048eb59701ad37b))
+- Use a separate Metadata for each bind ([commit](https://github.com/miguelgrinberg/alchemical/commit/5cdb37d85243e2350c61922c5d1ab8df15076c09))
+- Raise an error when the database URL is not configured. ([commit](https://github.com/miguelgrinberg/alchemical/commit/d3f3787a19e271c9cac6bca76fd17201b5c59ea2))
+- flaskr and aioflaskr examples ported from the Flask official tutorial
+
 **Release 0.3.0** - 2021-08-03
 
 - Add support for aioflask ([commit](https://github.com/miguelgrinberg/alchemical/commit/f5c0e2b424b39ab129789c2e707d49ecfb117b13))
