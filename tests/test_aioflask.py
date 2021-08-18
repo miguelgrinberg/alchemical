@@ -4,7 +4,6 @@ import sqlite3
 import unittest
 import pytest
 from aioflask import Flask
-from greenletio.core import bridge
 from alchemical.aioflask import Alchemical
 
 db = Alchemical()
@@ -31,9 +30,7 @@ class User2(db.Model):
 def async_test(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-        bridge.reset()
         asyncio.run(f(*args, **kwargs))
-        bridge.stop()
 
     return wrapper
 
