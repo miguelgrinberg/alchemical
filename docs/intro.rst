@@ -18,14 +18,15 @@ a few users, and finally prints the users to the console.
 
 ::
 
+    from sqlalchemy import Column, Integer, String
     from alchemical import Alchemical
 
     db = Alchemical('sqlite:///users.sqlite')
 
 
     class User(db.Model):
-        id = db.Column(db.Integer, primary_key=True)
-        name = db.Column(db.String(128))
+        id = Column(Integer, primary_key=True)
+        name = Column(String(128))
 
         def __repr__(self):
             return f'<User {self.name}'
@@ -37,20 +38,21 @@ a few users, and finally prints the users to the console.
         for name in ['mary', 'joe', 'susan']:
             session.add(User(name=name))
 
-    with db.session() as session:
-        print(session.execute(db.select(User)).scalars().all())
+    with db.Session() as session:
+        print(session.execute(User.select()).scalars().all())
 
 The next example implements the same application, but using ``asyncio``::
 
     import asyncio
+    from sqlalchemy import Column, Integer, String
     from alchemical.aio import Alchemical
 
     db = Alchemical('sqlite:///users.sqlite')
 
 
     class User(db.Model):
-        id = db.Column(db.Integer, primary_key=True)
-        name = db.Column(db.String(128))
+        id = Column(Integer, primary_key=True)
+        name = Column(String(128))
 
         def __repr__(self):
             return f'<User {self.name}'
@@ -64,8 +66,8 @@ The next example implements the same application, but using ``asyncio``::
             for name in ['mary', 'joe', 'susan']:
                 session.add(User(name=name))
 
-        async with db.session() as session:
-            print((await session.execute(db.select(User))).scalars().all())
+        async with db.Session() as session:
+            print((await session.execute(User.select())).scalars().all())
 
 
     asyncio.run(main())

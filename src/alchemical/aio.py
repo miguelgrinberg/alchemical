@@ -91,8 +91,8 @@ class Alchemical(BaseAlchemical):
 
             session = db.Session()
 
-        When the session is created in this way, ``session.close()`` must be
-        called when the session isn't needed anymore.
+        When the session is created in this way, ``await session.close()`` must
+        be called when the session isn't needed anymore.
         """
         return self.session_class(
             bind=self.get_engine(), binds=self.table_binds, future=True)
@@ -124,8 +124,8 @@ class Alchemical(BaseAlchemical):
         function receives a sync version of the Alchemical object as first
         argument.
 
-        Applications would not normally need to use this method directly, as is
-        it used internally to support some operations that do not currently
+        Applications would not normally need to use this method directly, as it
+        is used internally to support some operations that do not currently
         have an awaitable interface. For more information, search for
         ``run_sync`` in the SQLAlchemy documentation.
 

@@ -1,0 +1,3 @@
+# packages required to build the documentation
+flask
+aioflask
