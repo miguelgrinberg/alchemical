@@ -1,4 +1,5 @@
 from aioflask import Flask
+from sqlalchemy import Column, Integer, String
 from alchemical.aioflask import Alchemical
 from flask_migrate import Migrate
 
@@ -13,21 +14,21 @@ migrate = Migrate(app, db)
 
 
 class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128))
+    id = Column(Integer, primary_key=True)
+    name = Column(String(128))
 
 
 class Group(db.Model):
     __bind_key__ = 'db1'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128))
+    id = Column(Integer, primary_key=True)
+    name = Column(String(128))
 
 
 @app.route('/')
 async def index():
     async with db.Session() as session:
-        users = (await session.execute(db.select(User))).scalars()
-        groups = (await session.execute(db.select(Group))).scalars()
+        users = (await session.execute(User.select())).scalars()
+        groups = (await session.execute(Group.select())).scalars()
         return ('Users: ' + ', '.join([u.name for u in users]) +
                 '<br>Groups: ' + ', '.join([g.name for g in groups]))
 

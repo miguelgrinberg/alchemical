@@ -1,4 +1,6 @@
 import pytest
+from sqlalchemy import func
+from sqlalchemy import select
 
 from flaskr import db
 from flaskr.models import User
@@ -56,7 +58,7 @@ async def test_create(client, auth, app):
     await client.post("/create", data={"title": "created", "body": ""})
 
     async with app.app_context():
-        query = db.select(db.func.count()).select_from(Post)
+        query = select(func.count()).select_from(Post)
         assert (await db.session.execute(query)).scalar() == 2
 
 

@@ -6,6 +6,7 @@ from flask import request
 from flask import url_for
 from flask_login import login_user
 from flask_login import logout_user
+from sqlalchemy.exc import IntegrityError
 
 from flaskr import db, login
 from flaskr.models import User
@@ -38,7 +39,7 @@ def register():
             try:
                 db.session.add(User(username=username, password=password))
                 db.session.commit()
-            except db.IntegrityError:
+            except IntegrityError:
                 # The username was already taken, which caused the
                 # commit to fail. Show a validation error.
                 error = f"User {username} is already registered."
@@ -59,7 +60,7 @@ def login():
         password = request.form["password"]
         error = None
 
-        query = db.select(User).filter_by(username=username)
+        query = User.select().filter_by(username=username)
         user = db.session.execute(query).scalar()
 
         if user is None:

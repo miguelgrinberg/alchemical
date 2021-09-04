@@ -11,13 +11,14 @@ instance has been created and stored in a global variable named ``db``.
 The ``Alchemical`` instance provides a ``db.Model`` class to be used as a base
 class for database models::
 
-    class User(db.Model):
-        id = db.Column(db.Integer, primary_key=True)
-        name = db.Column(db.String(128))
+    from sqlalchemy import Column, Integer, String
 
-Note how the ``db`` object provides convenient access to SQLAlchemy constructs
-such as ``Column``, ``String``, etc. To learn more about how to define database
-models, consult the `SQLAlchemy ORM documentation <https://docs.sqlalchemy.org/en/14/orm/index.html>`_.
+    class User(db.Model):
+        id = Column(Integer, primary_key=True)
+        name = Column(String(128))
+
+To learn more about how to define database models, consult the
+`SQLAlchemy ORM documentation <https://docs.sqlalchemy.org/en/14/orm/index.html>`_.
 
 ... create a database session?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -25,31 +26,31 @@ models, consult the `SQLAlchemy ORM documentation <https://docs.sqlalchemy.org/e
 The recommended way to work with a database session is to use a context
 manager::
 
-    with db.session() as session:
+    with db.Session() as session:
         # work with the session here
 
 If you are using the asynchronous version of Alchemical, create a session as
 follows::
 
-    async with db.session() as session:
+    async with db.Session() as session:
         # work with the session here
 
 When the session is created in this way, a database transaction is
 automatically initiated when required, and the ``session.flush()``,
-``session.commit()`` and ``session.rollback()`` methods can be used as
-necessary. The session is automatically closed and returned to the session pool
-when the context manager block ends.
+``session.commit()`` and ``session.rollback()`` methods can be used inside the
+context manager block as needed. The session is automatically closed and
+returned to the session pool when the context manager block ends.
 
 You can also create a session without the context manager and close it
 manually::
 
-    session = db.session()
+    session = db.Session()
     # work with the session here
     session.close()
 
 And for the asynchronous version::
 
-    session = db.session()
+    session = db.Session()
     # work with the session here
     await session.close()
 
@@ -110,7 +111,7 @@ To add a new object to the database, use ``session.add()``::
         session.add(new_user)
 
     # with an explicit commit
-    with db.session() as session:
+    with db.Session() as session:
         new_user - User(name='mary')
         session.add(new_user)
         session.commit()
@@ -123,7 +124,7 @@ If you are using the asynchronous version of Alchemical::
         session.add(new_user)
 
     # with an explicit commit
-    async with db.session() as session:
+    async with db.Session() as session:
         new_user = User(name='mary')
         session.add(new_user)
         await session.commit()
@@ -135,13 +136,13 @@ The ``session.get()`` method can be used to retrieve an object by its primary
 key::
 
     # retrieve user with id=2
-    with db.begin() as session:
+    with db.Session() as session:
         user = session.get(User, 2)
 
 With the asynchronous version::
 
     # retrieve user with id=2
-    async with db.begin() as session:
+    async with db.Session() as session:
         user = await session.get(User, 2)
 
 ... execute a database query?
@@ -150,8 +151,8 @@ With the asynchronous version::
 Use the ``session.execute()`` method::
 
     # find all users with names starting with "m"
-    with db.session() as session:
-        for user in session.execute(db.select(User).where(User.name.like('m%'))).scalars():
+    with db.Session() as session:
+        for user in session.execute(User.select().where(User.name.like('m%'))).scalars():
             print(user.name)
 
 With the asynchronous version the ``session.execute()`` or ``session.stream()``
@@ -159,13 +160,14 @@ methods can be used, with the difference that the former buffers all results
 in memory while the latter does not::
 
     # find all users with names starting with "m"
-    async with db.session() as session:
-        for user in (await session.stream(db.select(User).where(User.name.like('m%')))).scalars():
+    async with db.Session() as session:
+        for user in (await session.stream(User.select().where(User.name.like('m%')))).scalars():
             print(user.name)
 
 The results from ``session.execute()`` and ``session.stream()`` are returned as
-a list of rows, even if only one result per row is requested. The ``scalars()``
-method converts each row to a single object for convenience.
+a list of rows, where each row is a tuple even if only one result per row was
+requested. The ``scalars()`` method converts each row to a single object for
+convenience.
 
 ... modify an object stored in a database table?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -179,7 +181,7 @@ transaction::
         user.name = 'john'
 
     # with an explicit commit
-    with db.session() as session:
+    with db.Session() as session:
         user = session.get(User, 2)
         user.name = 'john'
         session.commit()
@@ -192,7 +194,7 @@ With the asynchronous version::
         user.name = 'john'
 
     # with an explicit commit
-    async with db.session() as session:
+    async with db.Session() as session:
         user = await session.get(User, 2)
         user.name = 'john'
         await session.commit()
@@ -209,7 +211,7 @@ transaction::
         session.delete(user)
 
     # explicit commit
-    with db.session() as session:
+    with db.Session() as session:
         user = session.get(User, 2)
         session.delete(user)
         session.commit()
@@ -222,7 +224,7 @@ If you are using the asynchronous version::
         await session.delete(user)
 
     # explicit commit
-    async with db.begin() as session:
+    async with db.Session() as session:
         user = await session.get(User, 2)
         await session.delete(user)
         await session.commit()
@@ -232,13 +234,13 @@ If you are using the asynchronous version::
 
 Use ``session.execute()`` along with ``db.text()``::
 
-    with db.session() as session:
+    with db.Session() as session:
         sql = db.text('select * from user;')
         results = session.execute(sql).all()
 
 With the asynchronous version::
 
-    async with db.session() as session:
+    async with db.Session() as session:
         sql = db.text('select * from user;')
         results = (await session.execute(sql)).all()
 
@@ -249,3 +251,11 @@ statement::
         sql = db.text('select * from user;')
         async for row in await session.stream(sql):
             print(row)
+
+One advantage of using the ``text()`` function to create SQL statements is that
+it supports binding parameters, which is useful in preventing SQL injection
+attacks::
+
+    with db.Session() as session:
+        sql = db.text('select * from user where user.id = :user_id;')
+        results = session.execute(sql, params={'user_id': 5}).all()

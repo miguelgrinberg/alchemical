@@ -1,6 +1,8 @@
 import sqlite3
 import unittest
 import pytest
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
 from alchemical import Alchemical
 
 
@@ -9,8 +11,8 @@ class TestCore(unittest.TestCase):
         db = Alchemical('sqlite://')
 
         class User(db.Model):
-            id = db.Column(db.Integer, primary_key=True)
-            name = db.Column(db.String(128))
+            id = Column(Integer, primary_key=True)
+            name = Column(String(128))
 
         db.create_all()
         assert db.metadata == db.Model.metadata
@@ -20,14 +22,14 @@ class TestCore(unittest.TestCase):
                 session.add(User(name=name))
 
         with db.Session() as session:
-            all = session.execute(db.select(User)).scalars().all()
+            all = session.execute(User.select()).scalars().all()
         assert len(all) == 3
 
         db.drop_all()
         db.create_all()
 
         with db.Session() as session:
-            all = session.execute(db.select(User)).scalars().all()
+            all = session.execute(User.select()).scalars().all()
         assert len(all) == 0
 
     def test_binds(self):
@@ -37,27 +39,27 @@ class TestCore(unittest.TestCase):
 
         class User(db.Model):
             __tablename__ = 'users'
-            id = db.Column(db.Integer, primary_key=True)
-            name = db.Column(db.String(128))
+            id = Column(Integer, primary_key=True)
+            name = Column(String(128))
 
         class User1(db.Model):
             __tablename__ = 'users'
             __bind_key__ = 'one'
-            id = db.Column(db.Integer, primary_key=True)
-            name = db.Column(db.String(128))
+            id = Column(Integer, primary_key=True)
+            name = Column(String(128))
 
         class User2(db.Model):
             __bind_key__ = 'two'
-            id = db.Column(db.Integer, primary_key=True)
-            name = db.Column(db.String(128))
-            addresses = db.relationship('Address', back_populates='user')
+            id = Column(Integer, primary_key=True)
+            name = Column(String(128))
+            addresses = relationship('Address', back_populates='user')
 
         class Address(db.Model):
             __bind_key__ = 'two'
-            id = db.Column(db.Integer, primary_key=True)
-            name = db.Column(db.String(128))
-            user_id = db.Column(db.Integer, db.ForeignKey('user2.id'))
-            user = db.relationship('User2', back_populates='addresses')
+            id = Column(Integer, primary_key=True)
+            name = Column(String(128))
+            user_id = Column(Integer, ForeignKey('user2.id'))
+            user = relationship('User2', back_populates='addresses')
 
         db.create_all()
         assert db.bind_names() == ['one', 'two']

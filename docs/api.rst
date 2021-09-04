@@ -1,6 +1,12 @@
 API Reference
 -------------
 
+The BaseModel class
+~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: alchemical.core.BaseModel
+   :members:
+
 The Alchemical class
 ~~~~~~~~~~~~~~~~~~~~
 

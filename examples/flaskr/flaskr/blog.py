@@ -17,7 +17,7 @@ bp = Blueprint("blog", __name__)
 @bp.route("/")
 def index():
     """Show all the posts, most recent first."""
-    posts = db.session.execute(db.select(Post)).scalars().all()
+    posts = db.session.execute(Post.select()).scalars().all()
     return render_template("blog/index.html", posts=posts)
 
 

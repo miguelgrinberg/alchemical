@@ -1,12 +1,13 @@
 import asyncio
+from sqlalchemy import Column, Integer, String
 from alchemical.aio import Alchemical
 
 db = Alchemical('sqlite:///users.sqlite')
 
 
 class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128))
+    id = Column(Integer, primary_key=True)
+    name = Column(String(128))
 
     def __repr__(self):
         return f'<User {self.name}>'
@@ -21,7 +22,7 @@ async def main():
             session.add(User(name=name))
 
     async with db.Session() as session:
-        print((await session.execute(db.select(User))).scalars().all())
+        print((await session.execute(User.select())).scalars().all())
 
 
 asyncio.run(main())

@@ -2,27 +2,28 @@ import sqlite3
 import unittest
 from flask import Flask
 import pytest
+from sqlalchemy import Column, Integer, String
 from alchemical.flask import Alchemical
 
 db = Alchemical()
 
 
 class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128))
+    id = Column(Integer, primary_key=True)
+    name = Column(String(128))
 
 
 class User1(db.Model):
     __tablename__ = 'users1'
     __bind_key__ = 'one'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128))
+    id = Column(Integer, primary_key=True)
+    name = Column(String(128))
 
 
 class User2(db.Model):
     __bind_key__ = 'two'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128))
+    id = Column(Integer, primary_key=True)
+    name = Column(String(128))
 
 
 class TestFlask(unittest.TestCase):
@@ -39,14 +40,14 @@ class TestFlask(unittest.TestCase):
                 session.add(User(name=name))
 
         with db.Session() as session:
-            all = session.execute(db.select(User)).scalars().all()
+            all = session.execute(User.select()).scalars().all()
         assert len(all) == 3
 
         db.drop_all()
         db.create_all()
 
         with db.Session() as session:
-            all = session.execute(db.select(User)).scalars().all()
+            all = session.execute(User.select()).scalars().all()
         assert len(all) == 0
 
     def test_binds(self):
@@ -124,7 +125,7 @@ class TestFlask(unittest.TestCase):
             db.session.commit()
 
         with db.Session() as session:
-            all = session.execute(db.select(User)).scalars().all()
+            all = session.execute(User.select()).scalars().all()
         assert len(all) == 3
 
     def test_db_session_autocommit(self):
@@ -141,7 +142,7 @@ class TestFlask(unittest.TestCase):
                 db.session.add(User(name=name))
 
         with db.Session() as session:
-            all = session.execute(db.select(User)).scalars().all()
+            all = session.execute(User.select()).scalars().all()
         assert len(all) == 3
 
     def test_bad_config(self):

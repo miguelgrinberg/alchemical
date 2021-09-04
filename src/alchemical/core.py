@@ -2,11 +2,8 @@ from contextlib import contextmanager
 import re
 from threading import Lock
 
-import sqlalchemy
-import sqlalchemy.event
-import sqlalchemy.exc
-import sqlalchemy.orm
-import sqlalchemy.ext.asyncio
+from sqlalchemy import create_engine, MetaData, select
+from sqlalchemy.orm import declarative_base, Session
 from sqlalchemy.orm.decl_api import DeclarativeMeta
 
 
@@ -21,7 +18,18 @@ class TableNamer:  # pragma: no cover
 
 
 class BaseModel:
+    """This is the base model class from where all models inherit from."""
     __tablename__ = TableNamer()
+
+    @classmethod
+    def select(cls):
+        """Initiate a query on this model.
+
+        Example::
+
+            User.select().order_by(User.username)
+        """
+        return select(cls)
 
 
 class Alchemical:
@@ -43,7 +51,7 @@ class Alchemical:
     prefix_map = {'postgres': 'postgresql'}
 
     def __init__(self, url=None, binds=None, engine_options=None):
-        self._include_sqlalchemy()
+        self._setup_sqlalchemy()
         self.lock = Lock()
         self.url = None
         self.binds = None
@@ -71,33 +79,22 @@ class Alchemical:
         self.url = url or self.url
         self.binds = binds or self.binds
         self.engine_options = engine_options or self.engine_options
-        self.session_class = sqlalchemy.orm.Session
+        self.session_class = Session
         self.metadatas[None] = self.Model.metadata
 
-    def _include_sqlalchemy(self):
+    def _setup_sqlalchemy(self):
         class Meta(DeclarativeMeta):
             def __init__(cls, name, bases, d):
                 bind_key = d.pop('__bind_key__', None)
                 if bind_key:
                     if bind_key not in self.metadatas:
-                        self.metadatas[bind_key] = self.MetaData()
+                        self.metadatas[bind_key] = MetaData()
                     cls.metadata = self.metadatas[bind_key]
                 super().__init__(name, bases, d)
                 if bind_key and hasattr(cls, '__table__'):
                     cls.__table__.info['bind_key'] = bind_key
 
-        for module in sqlalchemy, sqlalchemy.orm:
-            for key in module.__all__:
-                if not hasattr(self, key):
-                    setattr(self, key, getattr(module, key))
-        for module in (sqlalchemy.ext.asyncio, sqlalchemy.exc):
-            for key in dir(module):
-                if (key == 'create_async_engine' or key[0].isupper()) and \
-                        not hasattr(self, key):
-                    setattr(self, key, getattr(module, key))
-        self.event = sqlalchemy.event
-        self.Model = sqlalchemy.orm.declarative_base(cls=BaseModel,
-                                                     metaclass=Meta)
+        self.Model = declarative_base(cls=BaseModel, metaclass=Meta)
 
     def _create_engines(self):
         options = (self.engine_options if not callable(self.engine_options)
@@ -123,7 +120,7 @@ class Alchemical:
         return url
 
     def _create_engine(self, url, *args, **kwargs):
-        return self.create_engine(url, *args, **kwargs)
+        return create_engine(url, *args, **kwargs)
 
     @property
     def metadata(self):
@@ -133,7 +130,7 @@ class Alchemical:
             return self.Model.metadata
 
         # Flask-SQLAlchemy puts all the binds in a single metadata instance
-        m = self.MetaData()
+        m = MetaData()
         for metadata in self.metadatas.values():
             for table in metadata.tables.values():
                 table.to_metadata(m)

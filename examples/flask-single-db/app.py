@@ -1,4 +1,5 @@
 from flask import Flask
+from sqlalchemy import Column, Integer, String
 from alchemical.flask import Alchemical
 from flask_migrate import Migrate
 
@@ -10,14 +11,14 @@ migrate = Migrate(app, db)
 
 
 class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128))
+    id = Column(Integer, primary_key=True)
+    name = Column(String(128))
 
 
 @app.route('/')
 def index():
     with db.Session() as session:
-        users = session.execute(db.select(User)).scalars()
+        users = session.execute(User.select()).scalars()
         return 'Users: ' + ', '.join([u.name for u in users])
 
 

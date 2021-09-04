@@ -4,27 +4,28 @@ import sqlite3
 import unittest
 import pytest
 from aioflask import Flask
+from sqlalchemy import Column, Integer, String
 from alchemical.aioflask import Alchemical
 
 db = Alchemical()
 
 
 class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128))
+    id = Column(Integer, primary_key=True)
+    name = Column(String(128))
 
 
 class User1(db.Model):
     __tablename__ = 'users1'
     __bind_key__ = 'one'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128))
+    id = Column(Integer, primary_key=True)
+    name = Column(String(128))
 
 
 class User2(db.Model):
     __bind_key__ = 'two'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128))
+    id = Column(Integer, primary_key=True)
+    name = Column(String(128))
 
 
 def async_test(f):
@@ -50,14 +51,14 @@ class TestAioFlask(unittest.TestCase):
                 session.add(User(name=name))
 
         async with db.Session() as session:
-            all = (await session.execute(db.select(User))).scalars().all()
+            all = (await session.execute(User.select())).scalars().all()
         assert len(all) == 3
 
         await db.drop_all()
         await db.create_all()
 
         async with db.Session() as session:
-            all = (await session.execute(db.select(User))).scalars().all()
+            all = (await session.execute(User.select())).scalars().all()
         assert len(all) == 0
 
     @async_test
@@ -145,7 +146,7 @@ class TestAioFlask(unittest.TestCase):
             await db.session.commit()
 
         async with db.Session() as session:
-            all = (await session.execute(db.select(User))).scalars().all()
+            all = (await session.execute(User.select())).scalars().all()
         assert len(all) == 3
 
     @async_test
@@ -163,7 +164,7 @@ class TestAioFlask(unittest.TestCase):
                 db.session.add(User(name=name))
 
         async with db.Session() as session:
-            all = (await session.execute(db.select(User))).scalars().all()
+            all = (await session.execute(User.select())).scalars().all()
         assert len(all) == 3
 
     @async_test

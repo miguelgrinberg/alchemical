@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.util.concurrency import greenlet_spawn
 from .core import Alchemical as BaseAlchemical
 
@@ -45,10 +46,10 @@ class Alchemical(BaseAlchemical):
         arguments.
         """
         super().initialize(url, binds=binds, engine_options=engine_options)
-        self.session_class = self.AsyncSession
+        self.session_class = AsyncSession
 
     def _create_engine(self, url, *args, **kwargs):
-        return self.create_async_engine(url, *args, **kwargs)
+        return create_async_engine(url, *args, **kwargs)
 
     async def create_all(self):
         """Create the database tables.
@@ -123,10 +124,10 @@ class Alchemical(BaseAlchemical):
         function receives a sync version of the Alchemical object as first
         argument.
 
-        Applications would not normally need to use this method, which is
-        used internally to support some operations that do not currently have
-        an awaitable interface. For more information, search for ``run_sync``
-        in the SQLAlchemy documentation.
+        Applications would not normally need to use this method directly, as is
+        it used internally to support some operations that do not currently
+        have an awaitable interface. For more information, search for
+        ``run_sync`` in the SQLAlchemy documentation.
 
         Note: this method is a coroutine.
         """
