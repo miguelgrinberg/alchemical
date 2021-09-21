@@ -42,6 +42,7 @@ class Alchemical:
                   with the ``__bind_key__`` class attribute.
     :param engine_options: a dictionary with additional engine options to
                            pass to SQLAlchemy.
+    :param model_class: the declarative base model class to use.
 
     The database instances can be initialized without arguments, in which case
     the :func:`Alchemical.initialize` method must be called later to perform
@@ -50,8 +51,9 @@ class Alchemical:
 
     prefix_map = {'postgres': 'postgresql'}
 
-    def __init__(self, url=None, binds=None, engine_options=None):
-        self._setup_sqlalchemy()
+    def __init__(self, url=None, binds=None, engine_options=None,
+                 model_class=None):
+        self._setup_sqlalchemy(model_class)
         self.lock = Lock()
         self.url = None
         self.binds = None
@@ -82,19 +84,31 @@ class Alchemical:
         self.session_class = Session
         self.metadatas[None] = self.Model.metadata
 
-    def _setup_sqlalchemy(self):
-        class Meta(DeclarativeMeta):
-            def __init__(cls, name, bases, d):
+    def _setup_sqlalchemy(self, model_class):
+        metaclass = type(model_class) if model_class else DeclarativeMeta
+
+        class Meta(metaclass):
+            def __init__(cls, name, bases, d, **kwargs):
                 bind_key = d.pop('__bind_key__', None)
                 if bind_key:
                     if bind_key not in self.metadatas:
                         self.metadatas[bind_key] = MetaData()
                     cls.metadata = self.metadatas[bind_key]
-                super().__init__(name, bases, d)
+                super().__init__(name, bases, d, **kwargs)
                 if bind_key and hasattr(cls, '__table__'):
                     cls.__table__.info['bind_key'] = bind_key
 
-        self.Model = declarative_base(cls=BaseModel, metaclass=Meta)
+        if not model_class:
+            self.Model = declarative_base(cls=BaseModel, metaclass=Meta)
+        else:
+            class Model(model_class, metaclass=Meta):
+                pass
+
+            for key, value in BaseModel.__dict__.items():
+                if key not in Model.__dict__ and key != '__dict__':
+                    setattr(Model, key, value)
+
+            self.Model = Model
 
     def _create_engines(self):
         options = (self.engine_options if not callable(self.engine_options)

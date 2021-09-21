@@ -14,6 +14,7 @@ class Alchemical(BaseAlchemical):
                   with the ``__bind_key__`` class attribute.
     :param engine_options: a dictionary with additional engine options to
                            pass to SQLAlchemy.
+    :param model_class: the declarative base model class to use.
 
     The database instances can be initialized without arguments, in which case
     the :func:`Alchemical.initialize` method must be called later to perform
@@ -27,8 +28,10 @@ class Alchemical(BaseAlchemical):
         'postgresql': 'postgresql+asyncpg'
     }
 
-    def __init__(self, url=None, binds=None, engine_options=None):
-        super().__init__(url=url, binds=binds, engine_options=engine_options)
+    def __init__(self, url=None, binds=None, engine_options=None,
+                 model_class=None):
+        super().__init__(url=url, binds=binds, engine_options=engine_options,
+                         model_class=model_class)
         self._sync = None
 
     def initialize(self, url, binds=None, engine_options=None):
