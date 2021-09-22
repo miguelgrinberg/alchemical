@@ -2,13 +2,21 @@ import sqlite3
 import unittest
 import pytest
 from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, declarative_base
 from alchemical import Alchemical
 
 
 class TestCore(unittest.TestCase):
+    def create_alchemical(self, url, binds=None):
+        if not binds:
+            return Alchemical(url)
+        else:
+            db = Alchemical()
+            db.initialize(url, binds=binds)
+            return db
+
     def test_read_write(self):
-        db = Alchemical('sqlite://')
+        db = self.create_alchemical('sqlite://')
 
         class User(db.Model):
             id = Column(Integer, primary_key=True)
@@ -33,8 +41,7 @@ class TestCore(unittest.TestCase):
         assert len(all) == 0
 
     def test_binds(self):
-        db = Alchemical()
-        db.initialize(
+        db = self.create_alchemical(
             'sqlite://', binds={'one': 'sqlite://', 'two': 'sqlite://'})
 
         class User(db.Model):
@@ -116,3 +123,31 @@ class TestCore(unittest.TestCase):
         with pytest.raises(sqlite3.OperationalError):
             cur.execute('select * from user2;')
         conn.close()
+
+
+class TestCoreWithCustomBase(TestCore):
+    def create_alchemical(self, url, binds=None):
+        class CustomModel:
+            def foo(self):
+                return 42
+
+        Model = declarative_base(cls=CustomModel)
+        return Alchemical(url, binds=binds, model_class=Model)
+
+    def test_custom_model(self):
+        db = self.create_alchemical('sqlite://')
+
+        class User(db.Model):
+            id = Column(Integer, primary_key=True)
+            name = Column(String(128))
+
+        db.create_all()
+
+        with db.begin() as session:
+            user = User(name='susan')
+            assert user.foo() == 42
+            session.add(user)
+
+        with db.Session() as session:
+            user = session.scalar(User.select())
+            assert user.foo() == 42

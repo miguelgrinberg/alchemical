@@ -42,7 +42,7 @@ class Alchemical:
                   with the ``__bind_key__`` class attribute.
     :param engine_options: a dictionary with additional engine options to
                            pass to SQLAlchemy.
-    :param model_class: the declarative base model class to use.
+    :param model_class: a custom declarative base to use for models.
 
     The database instances can be initialized without arguments, in which case
     the :func:`Alchemical.initialize` method must be called later to perform
@@ -101,14 +101,11 @@ class Alchemical:
         if not model_class:
             self.Model = declarative_base(cls=BaseModel, metaclass=Meta)
         else:
-            class Model(model_class, metaclass=Meta):
-                pass
-
-            for key, value in BaseModel.__dict__.items():
-                if key not in Model.__dict__ and key != '__dict__':
-                    setattr(Model, key, value)
-
-            self.Model = Model
+            class_dict = {k: v for k, v in BaseModel.__dict__.items()
+                          if not k.startswith('__')}
+            class_dict['__abstract__'] = True
+            class_dict['__tablename__'] = TableNamer()
+            self.Model = Meta('Base', (model_class, ), class_dict)
 
     def _create_engines(self):
         options = (self.engine_options if not callable(self.engine_options)

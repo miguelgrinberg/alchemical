@@ -14,7 +14,7 @@ class Alchemical(BaseAlchemical):
                   with the ``__bind_key__`` class attribute.
     :param engine_options: a dictionary with additional engine options to
                            pass to SQLAlchemy.
-    :param model_class: the declarative base model class to use.
+    :param model_class: a custom declarative base to use for models.
 
     The database instances can be initialized without arguments, in which case
     the :func:`Alchemical.initialize` method must be called later to perform
