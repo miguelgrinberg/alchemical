@@ -7,7 +7,7 @@ from alchemical import Alchemical
 
 
 class TestCore(unittest.TestCase):
-    def create_alchemical(self, url, binds=None):
+    def create_alchemical(self, url=None, binds=None):
         if not binds:
             return Alchemical(url)
         else:
@@ -124,9 +124,45 @@ class TestCore(unittest.TestCase):
             cur.execute('select * from user2;')
         conn.close()
 
+    def test_binds_without_url(self):
+        db = self.create_alchemical(
+            binds={'one': 'sqlite://', 'two': 'sqlite://'})
+
+        class User1(db.Model):
+            __tablename__ = 'users'
+            __bind_key__ = 'one'
+            id = Column(Integer, primary_key=True)
+            name = Column(String(128))
+
+        class User2(db.Model):
+            __bind_key__ = 'two'
+            id = Column(Integer, primary_key=True)
+            name = Column(String(128))
+            addresses = relationship('Address', back_populates='user')
+
+        class Address(db.Model):
+            __bind_key__ = 'two'
+            id = Column(Integer, primary_key=True)
+            name = Column(String(128))
+            user_id = Column(Integer, ForeignKey('user2.id'))
+            user = relationship('User2', back_populates='addresses')
+
+        db.create_all()
+        assert db.bind_names() == ['one', 'two']
+        assert db.metadata.tables.keys() == {'users', 'user2', 'address'}
+        assert db.get_engine() is None
+        db.drop_all()
+
+    def test_bad_init_arguments(self):
+        with pytest.raises(ValueError):
+            Alchemical(engine_options={'foo': 'bar'})
+        with pytest.raises(ValueError):
+            db = Alchemical()
+            db.initialize(engine_options={'foo': 'bar'})
+
 
 class TestCoreWithCustomBase(TestCore):
-    def create_alchemical(self, url, binds=None):
+    def create_alchemical(self, url=None, binds=None):
         class CustomModel:
             def foo(self):
                 return 42

@@ -42,7 +42,8 @@ class Alchemical:
                   with the ``__bind_key__`` class attribute.
     :param engine_options: a dictionary with additional engine options to
                            pass to SQLAlchemy.
-    :param model_class: a custom declarative base to use for models.
+    :param model_class: a custom declarative base to use as parent class for
+                        ``db.Model``.
 
     The database instances can be initialized without arguments, in which case
     the :func:`Alchemical.initialize` method must be called later to perform
@@ -61,10 +62,12 @@ class Alchemical:
         self.engines = None
         self.metadatas = {}
         self.table_binds = None
-        if url:
+        if url or binds:
             self.initialize(url, binds=binds, engine_options=engine_options)
+        elif engine_options:
+            raise ValueError('"url" and/or "binds" must be set')
 
-    def initialize(self, url, binds=None, engine_options=None):
+    def initialize(self, url=None, binds=None, engine_options=None):
         """Initialize the database instance.
 
         :param url: the database URL.
@@ -78,6 +81,8 @@ class Alchemical:
         This method must be used when the instance is created without
         arguments.
         """
+        if url is None and binds is None:
+            raise ValueError('"url" and/or "binds" must be set')
         self.url = url or self.url
         self.binds = binds or self.binds
         self.engine_options = engine_options or self.engine_options
@@ -111,8 +116,10 @@ class Alchemical:
         options = (self.engine_options if not callable(self.engine_options)
                    else self.engine_options(None))
         options.setdefault('future', True)
-        self.engines = {None: self._create_engine(
-            self._fix_url(self.url), **options)}
+        self.engines = {}
+        if self.url:
+            self.engines[None] = self._create_engine(
+                self._fix_url(self.url), **options)
         self.table_binds = {}
         for bind, url in (self.binds or {}).items():
             options = (self.engine_options if not callable(self.engine_options)
@@ -157,7 +164,7 @@ class Alchemical:
             with self.lock:
                 if self.engines is None:  # pragma: no cover
                     self._create_engines()
-        return self.engines[bind]
+        return self.engines.get(bind)
 
     def bind_names(self):
         return [bind for bind in self.engines if bind is not None]
@@ -168,7 +175,9 @@ class Alchemical:
         Only tables that do not already exist are created. Existing tables are
         not modified.
         """
-        self.metadatas[None].create_all(self.get_engine())
+        engine = self.get_engine()
+        if engine:
+            self.metadatas[None].create_all(engine)
         for bind in self.binds or {}:
             self.metadatas[bind].create_all(self.get_engine(bind))
 
@@ -178,7 +187,9 @@ class Alchemical:
         Note that this is a destructive operation; data stored in the
         database will be deleted when this method is called.
         """
-        self.metadatas[None].drop_all(self.get_engine())
+        engine = self.get_engine()
+        if engine:
+            self.metadatas[None].drop_all(engine)
         for bind in self.binds or {}:
             self.metadatas[bind].drop_all(self.get_engine(bind))
 

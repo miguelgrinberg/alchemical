@@ -147,7 +147,7 @@ class TestFlask(unittest.TestCase):
 
     def test_bad_config(self):
         app = Flask(__name__)
-        with pytest.raises(RuntimeError):
+        with pytest.raises(ValueError):
             db.init_app(app)
 
     def test_alternate_config(self):

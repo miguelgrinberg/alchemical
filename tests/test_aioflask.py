@@ -170,7 +170,7 @@ class TestAioFlask(unittest.TestCase):
     @async_test
     async def test_bad_config(self):
         app = Flask(__name__)
-        with pytest.raises(RuntimeError):
+        with pytest.raises(ValueError):
             db.init_app(app)
 
     @async_test

@@ -38,9 +38,6 @@ class Alchemical(BaseAlchemical):
         database_url = app.config.get('ALCHEMICAL_DATABASE_URL')
         if database_url is None:
             database_url = app.config.get('ALCHEMICAL_DATABASE_URI')
-        if database_url is None:
-            raise RuntimeError(
-                'ALCHEMICAL_DATABASE_URL not set in the configuration.')
 
         self.initialize(
             database_url,
