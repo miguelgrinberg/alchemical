@@ -27,8 +27,8 @@ class Group(db.Model):
 @app.route('/')
 def index():
     with db.Session() as session:
-        users = session.execute(User.select()).scalars()
-        groups = session.execute(Group.select()).scalars()
+        users = session.scalars(User.select())
+        groups = session.scalars(Group.select())
         return ('Users: ' + ', '.join([u.name for u in users]) +
                 '<br>Groups: ' + ', '.join([g.name for g in groups]))
 

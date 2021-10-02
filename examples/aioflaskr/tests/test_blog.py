@@ -59,7 +59,7 @@ async def test_create(client, auth, app):
 
     async with app.app_context():
         query = select(func.count()).select_from(Post)
-        assert (await db.session.execute(query)).scalar() == 2
+        assert await db.session.scalar(query) == 2
 
 
 @pytest.mark.asyncio

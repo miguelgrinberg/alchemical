@@ -39,7 +39,7 @@ a few users, and finally prints the users to the console.
             session.add(User(name=name))
 
     with db.Session() as session:
-        print(session.execute(User.select()).scalars().all())
+        print(session.scalars(User.select()).all())
 
 The next example implements the same application, but using ``asyncio``::
 
@@ -67,7 +67,7 @@ The next example implements the same application, but using ``asyncio``::
                 session.add(User(name=name))
 
         async with db.Session() as session:
-            print((await session.execute(User.select())).scalars().all())
+            print((await session.scalars(User.select())).all())
 
 
     asyncio.run(main())

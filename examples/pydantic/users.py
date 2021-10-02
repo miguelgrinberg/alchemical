@@ -22,4 +22,4 @@ with db.begin() as session:
         session.add(User(name=name))
 
 with db.Session() as session:
-    print(session.execute(User.select()).scalars().all())
+    print(session.scalars(User.select()).all())

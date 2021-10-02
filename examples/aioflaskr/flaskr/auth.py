@@ -61,7 +61,7 @@ async def login():
         error = None
 
         query = User.select().filter_by(username=username)
-        user = (await db.session.execute(query)).scalar()
+        user = await db.session.scalar(query)
 
         if user is None:
             error = "Incorrect username."

@@ -61,7 +61,7 @@ def login():
         error = None
 
         query = User.select().filter_by(username=username)
-        user = db.session.execute(query).scalar()
+        user = db.session.scalar(query)
 
         if user is None:
             error = "Incorrect username."

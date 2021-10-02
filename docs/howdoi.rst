@@ -148,26 +148,29 @@ With the asynchronous version::
 ... execute a database query?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Use the ``session.execute()`` method::
+Use the ``session.execute()``, ``session.scalars()`` or ``session.scalar()``
+methods, depending on your needs. Example::
 
     # find all users with names starting with "m"
     with db.Session() as session:
-        for user in session.execute(User.select().where(User.name.like('m%'))).scalars():
+        for user in session.scalars(User.select().where(User.name.like('m%'))):
             print(user.name)
 
-With the asynchronous version the ``session.execute()`` or ``session.stream()``
-methods can be used, with the difference that the former buffers all results
-in memory while the latter does not::
+With the asynchronous version the ``session.stream()`` and
+``session.stream_scalars()`` methods can also be used, with the difference that
+unlike the above methods, these do not buffer all results in memory, so they
+are more efficient for larger queries::
 
     # find all users with names starting with "m"
     async with db.Session() as session:
-        for user in (await session.stream(User.select().where(User.name.like('m%')))).scalars():
+        for user in (await session.stream_scalars(User.select().where(User.name.like('m%')))):
             print(user.name)
 
 The results from ``session.execute()`` and ``session.stream()`` are returned as
-a list of rows, where each row is a tuple even if only one result per row was
-requested. The ``scalars()`` method converts each row to a single object for
-convenience.
+a list of rows, where each row is a tuple, even if only one result per row was
+requested. The ``scalars()`` and ``stream_scalars()`` methods conveniently
+return the first result in each row. the ``scalar()`` method returns only the
+first object of the first row.
 
 ... modify an object stored in a database table?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

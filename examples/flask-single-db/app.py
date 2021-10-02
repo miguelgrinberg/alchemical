@@ -18,7 +18,7 @@ class User(db.Model):
 @app.route('/')
 def index():
     with db.Session() as session:
-        users = session.execute(User.select()).scalars()
+        users = session.scalars(User.select())
         return 'Users: ' + ', '.join([u.name for u in users])
 
 

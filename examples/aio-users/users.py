@@ -22,7 +22,7 @@ async def main():
             session.add(User(name=name))
 
     async with db.Session() as session:
-        print((await session.execute(User.select())).scalars().all())
+        print((await session.scalars(User.select())).all())
 
 
 asyncio.run(main())

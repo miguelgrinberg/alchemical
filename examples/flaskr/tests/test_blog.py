@@ -55,7 +55,7 @@ def test_create(client, auth, app):
 
     with app.app_context():
         query = select(func.count()).select_from(Post)
-        assert db.session.execute(query).scalar() == 2
+        assert db.session.scalar(query) == 2
 
 
 def test_update(client, auth, app):
