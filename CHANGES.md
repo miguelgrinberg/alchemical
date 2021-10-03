@@ -1,5 +1,13 @@
 # Alchemical change log
 
+**Release 0.5.0** - 2021-10-03
+
+- Add BaseModel.select() convenience method ([commit](https://github.com/miguelgrinberg/alchemical/commit/5c87a2382c2b91edc8fc529d8c7e38c898c2655d))
+- Support for pydantic models through SQLModel ([commit](https://github.com/miguelgrinberg/alchemical/commit/73708437d89b846cf16a63b954ba6a569fd5b591))
+- Allow `url` argument to be `None` when `binds` is not `None` ([commit](https://github.com/miguelgrinberg/alchemical/commit/3acde22d3b975eece4e43cee74d5886bf5048e92))
+- Remove auto-imported SQLAlchemy symbols ([commit](https://github.com/miguelgrinberg/alchemical/commit/5c87a2382c2b91edc8fc529d8c7e38c898c2655d))
+- Use session.scalars() and session.scalar() in examples and documentation ([commit](https://github.com/miguelgrinberg/alchemical/commit/cb6e4cd7837e686db51f080e8203a404f5d93e65))
+
 **Release 0.4.0** - 2021-08-18
 
 - Added db.session similar to Flask-SQLAlchemy ([commit](https://github.com/miguelgrinberg/alchemical/commit/a66f9bdac6a45aefb71fbc229598a1779f6e3f1e))
