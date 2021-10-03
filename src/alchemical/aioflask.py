@@ -24,9 +24,11 @@ class Alchemical(BaseAlchemical):
                 isn't provided here, the :func:`Alchemical.init_app` method
                 must be called later to complete the initialization of the
                 extension.
+    :param kwargs: optional arguments that are passed to the base
+                   ``Alchemical`` class.
     """
-    def __init__(self, app=None):
-        super().__init__()
+    def __init__(self, app=None, **kwargs):
+        super().__init__(**kwargs)
         if app:  # pragma: no cover
             self.init_app(app)
 

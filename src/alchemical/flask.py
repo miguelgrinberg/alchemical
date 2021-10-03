@@ -5,8 +5,8 @@ from .core import Alchemical as BaseAlchemical
 class Alchemical(BaseAlchemical):
     """Create an Alchamical instance for a Flask application.
 
-    The following configuration variables are import from the Flask application
-    instance:
+    The following configuration variables are imported from the Flask
+    application instance:
 
     - ``ALCHEMICAL_DATABASE_URL``: the database connection URL.
     - ``ALCHEMICAL_BINDS``: a dictionary with additional databases to manage
@@ -24,9 +24,11 @@ class Alchemical(BaseAlchemical):
                 isn't provided here, the :func:`Alchemical.init_app` method
                 must be called later to complete the initialization of the
                 extension.
+    :param kwargs: optional arguments that are passed to the base
+                   ``Alchemical`` class.
     """
-    def __init__(self, app=None):
-        super().__init__()
+    def __init__(self, app=None, **kwargs):
+        super().__init__(**kwargs)
         if app:  # pragma: no cover
             self.init_app(app)
 
