@@ -10,6 +10,7 @@ Alchemical
    :maxdepth: 2
 
    intro
+   usage
    howdoi
    api
 

@@ -169,7 +169,7 @@ are more efficient for larger queries::
 The results from ``session.execute()`` and ``session.stream()`` are returned as
 a list of rows, where each row is a tuple, even if only one result per row was
 requested. The ``scalars()`` and ``stream_scalars()`` methods conveniently
-return the first result in each row. the ``scalar()`` method returns only the
+return the first result in each row. The ``scalar()`` method returns only the
 first object of the first row.
 
 ... modify an object stored in a database table?
