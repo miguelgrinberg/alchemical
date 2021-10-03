@@ -53,7 +53,7 @@ async def test_login(client, auth):
 
     # login request set the user_id in the session
     # check that the user is loaded from the session
-    with client:
+    async with client:
         response = await client.get("/")
         assert b"<span>test</span>" in response.data
 
@@ -73,7 +73,7 @@ async def test_login_validate_input(auth, username, password, message):
 async def test_logout(client, auth):
     await auth.login()
 
-    with client:
+    async with client:
         await auth.logout()
         response = await client.get("/")
         assert b"Log In" in response.data
