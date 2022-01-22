@@ -2,7 +2,7 @@ from contextlib import contextmanager
 import re
 from threading import Lock
 
-from sqlalchemy import create_engine, MetaData, select
+from sqlalchemy import create_engine, MetaData, select, update, delete
 from sqlalchemy.orm import declarative_base, Session
 from sqlalchemy.orm.decl_api import DeclarativeMeta
 
@@ -23,13 +23,33 @@ class BaseModel:
 
     @classmethod
     def select(cls):
-        """Initiate a query on this model.
+        """Create a select statement on this model.
 
         Example::
 
             User.select().order_by(User.username)
         """
         return select(cls)
+
+    @classmethod
+    def update(cls):
+        """Create an update statement on this model.
+
+        Example::
+
+            User.select().order_by(User.username)
+        """
+        return update(cls)
+
+    @classmethod
+    def delete(cls):
+        """Create a delete statement on this model.
+
+        Example::
+
+            User.delete().where(User.username == 'susan')
+        """
+        return delete(cls)
 
 
 class Alchemical:

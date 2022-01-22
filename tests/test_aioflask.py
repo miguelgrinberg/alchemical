@@ -54,6 +54,21 @@ class TestAioFlask(unittest.TestCase):
             all = (await session.execute(User.select())).scalars().all()
         assert len(all) == 3
 
+        async with db.Session() as session:
+            await session.execute(User.update().where(
+                User.name == 'joe').values(name='john'))
+            names = [u.name for u in (await session.execute(
+                User.select())).scalars().all()]
+            assert 'joe' not in names
+            assert 'john' in names
+
+        async with db.Session() as session:
+            await session.execute(User.delete().where(User.name == 'mary'))
+            names = [u.name for u in (await session.execute(
+                User.select())).scalars().all()]
+            assert len(names) == 2
+            assert 'mary' not in names
+
         await db.drop_all()
         await db.create_all()
 

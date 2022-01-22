@@ -33,6 +33,21 @@ class TestCore(unittest.TestCase):
             all = session.execute(User.select()).scalars().all()
         assert len(all) == 3
 
+        with db.Session() as session:
+            session.execute(User.update().where(User.name == 'joe').values(
+                name='john'))
+            names = [u.name for u in session.execute(
+                User.select()).scalars().all()]
+            assert 'joe' not in names
+            assert 'john' in names
+
+        with db.Session() as session:
+            session.execute(User.delete().where(User.name == 'mary'))
+            names = [u.name for u in session.execute(
+                User.select()).scalars().all()]
+            assert len(names) == 2
+            assert 'mary' not in names
+
         db.drop_all()
         db.create_all()
 
