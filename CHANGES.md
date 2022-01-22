@@ -1,5 +1,10 @@
 # Alchemical change log
 
+**Release 0.5.1** - 2022-01-22
+
+- add update() and delete() to db.Model class ([commit](https://github.com/miguelgrinberg/alchemical/commit/818c0542ec6fc62e14679dd0917d145cb4b19582))
+- Documentation on many common use cases ([commit](https://github.com/miguelgrinberg/alchemical/commit/9ade0914da50c9dafbb6595ac271b248af93d660))
+
 **Release 0.5.0** - 2021-10-03
 
 - Add BaseModel.select() convenience method ([commit](https://github.com/miguelgrinberg/alchemical/commit/5c87a2382c2b91edc8fc529d8c7e38c898c2655d))
