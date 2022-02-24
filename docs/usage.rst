@@ -35,7 +35,7 @@ rules, using ``db.Model`` as the base class::
     from sqlalchemy import Column, Integer, String, ForeignKey
     from alchemical import Alchemical
 
-    db = Alchemica('sqlite:///data.sqlite')
+    db = Alchemical('sqlite:///data.sqlite')
 
     class User(db.Model):
         id = Column(Integer, primary_key=True)
