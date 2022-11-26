@@ -257,10 +257,3 @@ Example::
         async with db.Session() as session:
             users = await session.scalars(User.select())
             return {'users': [u.name for u in users]}
-
-Using with Aioflask
-~~~~~~~~~~~~~~~~~~~
-
-Alchemical includes a dedicated extension for
-`aioflask <https://github.com/miguelgrinberg/aioflask>`_ that mirrors the Flask
-extension, and also allows the use of Flask-Migrate.
