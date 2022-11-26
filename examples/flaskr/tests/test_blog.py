@@ -24,8 +24,7 @@ def test_index(client, auth):
 @pytest.mark.parametrize("path", ("/create", "/1/update", "/1/delete"))
 def test_login_required(client, path):
     response = client.post(path)
-    assert response.headers["Location"].startswith(
-        "http://localhost/auth/login?next=")
+    assert "/auth/login?next=" in response.headers["Location"]
 
 
 def test_author_required(app, client, auth):
@@ -77,7 +76,7 @@ def test_create_update_validate(client, auth, path):
 def test_delete(client, auth, app):
     auth.login()
     response = client.post("/1/delete")
-    assert response.headers["Location"] == "http://localhost/"
+    assert response.headers["Location"] in ["http://localhost/", "/"]
 
     with app.app_context():
         assert db.session.get(Post, 1) is None
