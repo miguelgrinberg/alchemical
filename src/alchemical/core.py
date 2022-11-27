@@ -6,6 +6,14 @@ from sqlalchemy import create_engine, MetaData, select, update, delete
 from sqlalchemy.orm import declarative_base, Session
 from sqlalchemy.orm.decl_api import DeclarativeMeta
 
+DEFAULT_NAMING_CONVENTION = {
+  "ix": "ix_%(column_0_label)s",
+  "uq": "uq_%(table_name)s_%(column_0_name)s",
+  "ck": "ck_%(table_name)s_%(constraint_name)s",
+  "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+  "pk": "pk_%(table_name)s"
+}
+
 
 class TableNamer:  # pragma: no cover
     def __get__(self, obj, type):
@@ -64,7 +72,11 @@ class Alchemical:
                            pass to SQLAlchemy.
     :param model_class: a custom declarative base to use as parent class for
                         ``db.Model``.
-
+    :param naming_convention: a dictionary with naming conventions to pass to
+                              SQLAlchemy. The naming convention recommended in
+                              the SQLAlchemy documentation is used by default.
+                              Pass an empty dictionary to disable naming
+                              conventions.
     The database instances can be initialized without arguments, in which case
     the :func:`Alchemical.initialize` method must be called later to perform
     the initialization.
@@ -73,14 +85,16 @@ class Alchemical:
     prefix_map = {'postgres': 'postgresql'}
 
     def __init__(self, url=None, binds=None, engine_options=None,
-                 model_class=None):
+                 model_class=None, naming_convention=None):
+        self.metadatas = {}
+        self.naming_convention = DEFAULT_NAMING_CONVENTION \
+            if naming_convention is None else naming_convention
         self._setup_sqlalchemy(model_class)
         self.lock = Lock()
         self.url = None
         self.binds = None
         self.engine_options = {}
         self.engines = None
-        self.metadatas = {}
         self.table_binds = None
         if url or binds:
             self.initialize(url, binds=binds, engine_options=engine_options)
@@ -115,10 +129,10 @@ class Alchemical:
         class Meta(metaclass):
             def __init__(cls, name, bases, d, **kwargs):
                 bind_key = d.pop('__bind_key__', None)
-                if bind_key:
-                    if bind_key not in self.metadatas:
-                        self.metadatas[bind_key] = MetaData()
-                    cls.metadata = self.metadatas[bind_key]
+                if bind_key not in self.metadatas:
+                    self.metadatas[bind_key] = MetaData(
+                        naming_convention=self.naming_convention)
+                cls.metadata = self.metadatas[bind_key]
                 super().__init__(name, bases, d, **kwargs)
                 if bind_key and hasattr(cls, '__table__'):
                     cls.__table__.info['bind_key'] = bind_key

@@ -58,11 +58,13 @@ class TestAlembic(unittest.TestCase):
         run_cmd('alembic upgrade head')
         assert get_schema('users.sqlite') == [
             'CREATE TABLE user '
-            '(id INTEGER NOT NULL, name VARCHAR(128), PRIMARY KEY (id))'
+            '(id INTEGER NOT NULL, name VARCHAR(128), '
+            'CONSTRAINT pk_user PRIMARY KEY (id))'
         ]
         assert get_schema('groups.sqlite') == [
             'CREATE TABLE groups '
-            '(id INTEGER NOT NULL, name VARCHAR(128), PRIMARY KEY (id))'
+            '(id INTEGER NOT NULL, name VARCHAR(128), '
+            'CONSTRAINT pk_groups PRIMARY KEY (id))'
         ]
 
         # downgrade
@@ -74,11 +76,13 @@ class TestAlembic(unittest.TestCase):
         run_cmd('alembic upgrade head')
         assert get_schema('users.sqlite') == [
             'CREATE TABLE user '
-            '(id INTEGER NOT NULL, name VARCHAR(128), PRIMARY KEY (id))'
+            '(id INTEGER NOT NULL, name VARCHAR(128), '
+            'CONSTRAINT pk_user PRIMARY KEY (id))'
         ]
         assert get_schema('groups.sqlite') == [
             'CREATE TABLE groups '
-            '(id INTEGER NOT NULL, name VARCHAR(128), PRIMARY KEY (id))'
+            '(id INTEGER NOT NULL, name VARCHAR(128), '
+            'CONSTRAINT pk_groups PRIMARY KEY (id))'
         ]
 
         # create a second revision
@@ -88,11 +92,12 @@ class TestAlembic(unittest.TestCase):
         assert get_schema('users.sqlite') == [
             'CREATE TABLE "user" '
             '(id INTEGER NOT NULL, name VARCHAR(64), email VARCHAR(64), '
-            'PRIMARY KEY (id))'
+            'CONSTRAINT pk_user PRIMARY KEY (id))'
         ]
         assert get_schema('groups.sqlite') == [
             'CREATE TABLE "groups" '
-            '(id INTEGER NOT NULL, name VARCHAR(64), PRIMARY KEY (id))'
+            '(id INTEGER NOT NULL, name VARCHAR(64), '
+            'CONSTRAINT pk_groups PRIMARY KEY (id))'
         ]
 
         # create a third revision
@@ -101,11 +106,13 @@ class TestAlembic(unittest.TestCase):
         run_cmd('alembic upgrade head')
         assert get_schema('users.sqlite') == [
             'CREATE TABLE "user" '
-            '(id INTEGER NOT NULL, name VARCHAR(128), PRIMARY KEY (id))'
+            '(id INTEGER NOT NULL, name VARCHAR(128), '
+            'CONSTRAINT pk_user PRIMARY KEY (id))'
         ]
         assert get_schema('groups.sqlite') == [
             'CREATE TABLE "groups" '
-            '(id INTEGER NOT NULL, name VARCHAR(128), PRIMARY KEY (id))'
+            '(id INTEGER NOT NULL, name VARCHAR(128), '
+            'CONSTRAINT pk_groups PRIMARY KEY (id))'
         ]
 
     def test_alembic_async(self):
@@ -120,11 +127,13 @@ class TestAlembic(unittest.TestCase):
         run_cmd('alembic upgrade head')
         assert get_schema('users.sqlite') == [
             'CREATE TABLE user '
-            '(id INTEGER NOT NULL, name VARCHAR(128), PRIMARY KEY (id))'
+            '(id INTEGER NOT NULL, name VARCHAR(128), '
+            'CONSTRAINT pk_user PRIMARY KEY (id))'
         ]
         assert get_schema('groups.sqlite') == [
             'CREATE TABLE groups '
-            '(id INTEGER NOT NULL, name VARCHAR(128), PRIMARY KEY (id))'
+            '(id INTEGER NOT NULL, name VARCHAR(128), '
+            'CONSTRAINT pk_groups PRIMARY KEY (id))'
         ]
 
         # downgrade
@@ -136,11 +145,13 @@ class TestAlembic(unittest.TestCase):
         run_cmd('alembic upgrade head')
         assert get_schema('users.sqlite') == [
             'CREATE TABLE user '
-            '(id INTEGER NOT NULL, name VARCHAR(128), PRIMARY KEY (id))'
+            '(id INTEGER NOT NULL, name VARCHAR(128), '
+            'CONSTRAINT pk_user PRIMARY KEY (id))'
         ]
         assert get_schema('groups.sqlite') == [
             'CREATE TABLE groups '
-            '(id INTEGER NOT NULL, name VARCHAR(128), PRIMARY KEY (id))'
+            '(id INTEGER NOT NULL, name VARCHAR(128), '
+            'CONSTRAINT pk_groups PRIMARY KEY (id))'
         ]
 
         # create a second revision
@@ -150,11 +161,12 @@ class TestAlembic(unittest.TestCase):
         assert get_schema('users.sqlite') == [
             'CREATE TABLE "user" '
             '(id INTEGER NOT NULL, name VARCHAR(64), email VARCHAR(64), '
-            'PRIMARY KEY (id))'
+            'CONSTRAINT pk_user PRIMARY KEY (id))'
         ]
         assert get_schema('groups.sqlite') == [
             'CREATE TABLE "groups" '
-            '(id INTEGER NOT NULL, name VARCHAR(64), PRIMARY KEY (id))'
+            '(id INTEGER NOT NULL, name VARCHAR(64), '
+            'CONSTRAINT pk_groups PRIMARY KEY (id))'
         ]
 
         # create a third revision
@@ -163,9 +175,11 @@ class TestAlembic(unittest.TestCase):
         run_cmd('alembic upgrade head')
         assert get_schema('users.sqlite') == [
             'CREATE TABLE "user" '
-            '(id INTEGER NOT NULL, name VARCHAR(128), PRIMARY KEY (id))'
+            '(id INTEGER NOT NULL, name VARCHAR(128), '
+            'CONSTRAINT pk_user PRIMARY KEY (id))'
         ]
         assert get_schema('groups.sqlite') == [
             'CREATE TABLE "groups" '
-            '(id INTEGER NOT NULL, name VARCHAR(128), PRIMARY KEY (id))'
+            '(id INTEGER NOT NULL, name VARCHAR(128), '
+            'CONSTRAINT pk_groups PRIMARY KEY (id))'
         ]
