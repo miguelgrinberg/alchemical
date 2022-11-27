@@ -18,6 +18,7 @@ class TestAio(unittest.TestCase):
     @async_test
     async def test_read_write(self):
         db = Alchemical('sqlite://')
+        assert db.is_async()
 
         class User(db.Model):
             id = Column(Integer, primary_key=True)

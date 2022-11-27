@@ -17,6 +17,7 @@ class TestCore(unittest.TestCase):
 
     def test_read_write(self):
         db = self.create_alchemical('sqlite://')
+        assert db.is_async() is False
 
         class User(db.Model):
             id = Column(Integer, primary_key=True)

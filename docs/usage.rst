@@ -149,6 +149,19 @@ the Postgres and SQLite databases of the previous example::
 When combining a main database with binds, any database models that do not
 have a ``__bind_key__`` attribute are assigned to the main database.
 
+Asyncio Support
+~~~~~~~~~~~~~~~
+
+SQLAlchemy 1.4 has full support for the asyncio package. Alchemical provides
+an async-enabled database instance that can be imported from
+``alchemical.aio``::
+
+    from alchemical.aio import Alchemical
+
+When using the async version of the ``Alchemical`` class many of the methods
+and context-managers are async and need to be awaited, but other than this
+there are no differences.
+
 Using Pydantic Models
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -168,12 +181,75 @@ instance::
         id: Optional[int] = Field(default=None, primary_key=True)
         name: str = Field(max_length=128)
 
-Using with Web Frameworks
--------------------------
+Database Migrations with Alembic
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Alchemical provides a basic integration with Alembic that makes it possible to
+manage changes to the database schemas through migration scripts.
+
+To initialize a migration repository, run the following command::
+
+    python -m alchemical.alembic.cli init migrations
+
+This special way of initializing Alembic is necessary to allow Alchemical to
+include its own customized templates in the repository. Outside of the ``init``
+command, invoking Alembic through the ``alchemical.alembic.cli`` module has the
+same effect as invoking it directly through the ``alembic`` command.
+
+The ``init`` command creates a *migrations* directory and initializes it as an
+empty Alembic migration repository (a different directory name can be given as
+the last argument to the command above if desired). An *alembic.ini* file is
+also created in the project directory.
+
+To configure the new repository, the ``alchemical_db`` setting in the
+*alembic.ini* file must be set to point to the location of the ``Alchemical``
+instance. For example, if the ``Alchemical`` instance is called ``db`` and is
+in a *myproject.py* module::
+
+    [alembic]
+    alchemical_db = myproject:db
+
+The syntax used by this setting is similar to the one used by many WSGI web
+servers to configure the application instance. It consists of the module import
+path, followed by a colon and the name of the ``Alchemical`` instance.
+
+One of the most interesting features of Alembic is its ability to automatically
+generate migration scripts based on the changes made to the database models.
+Alchemical provides an optimal configuration for this, with the following two
+options enabled:
+
+- ``render_as_batch``, to enable batch migrations when using SQLite. This
+  setting should have no effect on other databases.
+- ``compare_type``, to enable column type comparisons.
+
+These and other autogeneration options can be edited in the file
+*migrations/env.py*, using the comments in that file and the Alembic
+documentation as reference.
+
+After the migration repository is created and configured, you can use the
+``alembic`` command to autogenerate a first migration script::
+
+    alembic revision --autogenerate -m "Initial migration"
+
+If the migration script is correct, it can be applied to the database with the
+following command::
+
+    alembic upgrade head
+
+The Alembic integration provided by Alchemical is a superset of the three
+template options that come standard with Alembic. In particular, an Alchemical
+configured migration repository should automatically work with single or
+multi-database projects, and also with async projects.
+
+See the `Alembic documentation <https://alembic.sqlalchemy.org/en/latest/>`_ to
+learn more about Alembic and how to use it.
+
+Integration with Web Frameworks
+-------------------------------
 
 Alchemical is framework agnostic, so it should integrate well with most web
 frameworks, without any additional work. This section describes specific
-integrations that go beyond the basic usage.
+integrations that go beyond the basic usage or are of particular interest.
 
 Using with Flask
 ~~~~~~~~~~~~~~~~
@@ -189,7 +265,8 @@ The Alchemical Flask extension imports its configuration from Flask's
 - ``ALCHEMICAL_DATABASE_URL``: the database connection URL.
 - ``ALCHEMICAL_BINDS``: a dictionary with database binds.
 - ``ALCHEMOCAL_ENGINE_OPTIONS``: optionl engine options to pass to SQLAlchemy.
-- ``ALCHEMICAL_AUTOCOMMIT``: If set to ``True``, database sessions are auto-committed when the request ends (the default is ``False``).
+- ``ALCHEMICAL_AUTOCOMMIT``: If set to ``True``, database sessions are
+  auto-committed when the request ends (the default is ``False``).
 
 Example::
 
@@ -209,28 +286,14 @@ The ``db.session`` is entirely optional. The ``db.Session`` class and its
 context manager can be used in a Flask application if preferred.
 
 Database Migrations with Flask-Migrate
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When using the Alchemical Flask extension, use of
 `Flask-Migrate <https://flask-migrate.readthedocs.io/en/latest/>`_ to manage
 database migrations with Alembic is fully supported.
 
-Refer to the Flask-Migrate documentation for instructions. While many of the
-Flask-Migrate examples use the Flask-SQLAlchemy extension, Alchemical can be
-used in its place.
-
-Asyncio Support
----------------
-
-SQLAlchemy 1.4 has full support for the asyncio package. Alchemical provides
-an async-enabled database instance that can be imported from
-``alchemical.aio``::
-
-    from alchemical.aio import Alchemical
-
-When using the async version of the ``Alchemical`` class many of the methods
-and context-managers are async and need to be awaited, but other than this
-there are no differences.
+Refer to the Flask-Migrate documentation for instructions. The Alchemical
+``db`` object can be used in place of Flask-SQLAlchemy's ``db``.
 
 Using with FastAPI
 ~~~~~~~~~~~~~~~~~~

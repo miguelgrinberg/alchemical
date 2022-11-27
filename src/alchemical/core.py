@@ -251,3 +251,7 @@ class Alchemical:
         with self.Session() as session:
             with session.begin():
                 yield session
+
+    def is_async(self):
+        """Return True if this database instance is asynchronous."""
+        return False

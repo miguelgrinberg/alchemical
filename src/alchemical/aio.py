@@ -148,3 +148,7 @@ class Alchemical(BaseAlchemical):
                 for table, engine in self.table_binds.items()}
 
         return await greenlet_spawn(f, self._sync, *args, **kwargs)
+
+    def is_async(self):
+        """Return True if this database instance is asynchronous."""
+        return True
