@@ -1,5 +1,15 @@
 # Alchemical change log
 
+**Release 0.6.0** - 2022-11-27
+
+- Alembic integration ([commit](https://github.com/miguelgrinberg/alchemical/commit/4bc3f687647e20722105dac6831c8bf96becab5a))
+- Use named constraints by default ([commit](https://github.com/miguelgrinberg/alchemical/commit/0531883aae3db65471208bfff3508ee4fea7ad05))
+- Update flaskr tests for Flask's relative redirects ([commit](https://github.com/miguelgrinberg/alchemical/commit/033e69aebdb1ae48b8ca7c6d041fef4bd7ebae82))
+- Add Python 3.10, 3.11 and pypy to builds ([commit](https://github.com/miguelgrinberg/alchemical/commit/b9e4af488b29457f187df63bacfa9b466110e131))
+- Remove unused aioflask support ([commit](https://github.com/miguelgrinberg/alchemical/commit/8fca5f91bed60d37c7ee8ee6a231a7d655e4103a))
+- Multi-database example ([commit](https://github.com/miguelgrinberg/alchemical/commit/8c1f4e20a803bafd6342968424232b3e279e6e12))
+- Fixed typo in documentation example [#4](https://github.com/miguelgrinberg/alchemical/issues/4) ([commit](https://github.com/miguelgrinberg/alchemical/commit/6a995ed288ac219d506ff6866f14bc15a265795d)) (thanks **Giorgio Salluzzo**!)
+
 **Release 0.5.1** - 2022-01-22
 
 - add update() and delete() to db.Model class ([commit](https://github.com/miguelgrinberg/alchemical/commit/818c0542ec6fc62e14679dd0917d145cb4b19582))
