@@ -94,7 +94,8 @@ class Alchemical(BaseAlchemical):
         """
         if self.session_class is None:
             self.session_class = async_sessionmaker(
-                bind=self.get_engine(), binds=self.table_binds, future=True)
+                bind=self.get_engine(), binds=self.table_binds, future=True,
+                expire_on_commit=False)
         return self.session_class
 
     @asynccontextmanager
