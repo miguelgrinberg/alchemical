@@ -3,7 +3,7 @@ import re
 from threading import Lock
 
 from sqlalchemy import create_engine, MetaData, select, update, delete
-from sqlalchemy.orm import declarative_base, Session
+from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy.orm.decl_api import DeclarativeMeta
 
 DEFAULT_NAMING_CONVENTION = {
@@ -94,6 +94,7 @@ class Alchemical:
         self.url = None
         self.binds = None
         self.engine_options = {}
+        self.session_class = None
         self.engines = None
         self.table_binds = None
         if url or binds:
@@ -120,7 +121,6 @@ class Alchemical:
         self.url = url or self.url
         self.binds = binds or self.binds
         self.engine_options = engine_options or self.engine_options
-        self.session_class = Session
         self.metadatas[None] = self.Model.metadata
 
     def _setup_sqlalchemy(self, model_class):
@@ -227,6 +227,7 @@ class Alchemical:
         for bind in self.binds or {}:
             self.metadatas[bind].drop_all(self.get_engine(bind))
 
+    @property
     def Session(self):
         """Return a database session.
 
@@ -244,8 +245,10 @@ class Alchemical:
         When the session is created in this way, ``session.close()`` must be
         called when the session isn't needed anymore.
         """
-        return self.session_class(
-            bind=self.get_engine(), binds=self.table_binds, future=True)
+        if self.session_class is None:
+            self.session_class = sessionmaker(
+                bind=self.get_engine(), binds=self.table_binds, future=True)
+        return self.session_class
 
     @contextmanager
     def begin(self):

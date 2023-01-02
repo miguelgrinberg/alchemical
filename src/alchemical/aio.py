@@ -1,5 +1,15 @@
 from contextlib import asynccontextmanager
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine
+
+try:
+    from sqlalchemy.ext.asyncio import async_sessionmaker  # only in 2.0+
+except ImportError:
+    from sqlalchemy.ext.asyncio import AsyncSession
+    from sqlalchemy.orm import sessionmaker
+
+    def async_sessionmaker(*args, **kwargs):
+        return sessionmaker(*args, **kwargs, class_=AsyncSession)
+
 from sqlalchemy.util.concurrency import greenlet_spawn
 from .core import Alchemical as BaseAlchemical
 
@@ -35,23 +45,6 @@ class Alchemical(BaseAlchemical):
                          model_class=model_class)
         self._sync = None
 
-    def initialize(self, url=None, binds=None, engine_options=None):
-        """Initialize the database instance.
-
-        :param url: the database URL.
-        :param binds: a dictionary with additional databases to manage with
-                      this instance. The keys are the names, and the values are
-                      the database URLs. A model is then assigned to a specific
-                      bind with the `__bind_key__` class attribute.
-        :param engine_options: a dictionary with additional engine options to
-                               pass to SQLAlchemy.
-
-        This method must be used when the instance is created without
-        arguments.
-        """
-        super().initialize(url, binds=binds, engine_options=engine_options)
-        self.session_class = AsyncSession
-
     def _create_engine(self, url, *args, **kwargs):
         return create_async_engine(url, *args, **kwargs)
 
@@ -81,6 +74,7 @@ class Alchemical(BaseAlchemical):
 
         await self.run_sync(sync_drop_all)
 
+    @property
     def Session(self):
         """Return a database session.
 
@@ -98,8 +92,10 @@ class Alchemical(BaseAlchemical):
         When the session is created in this way, ``await session.close()`` must
         be called when the session isn't needed anymore.
         """
-        return self.session_class(
-            bind=self.get_engine(), binds=self.table_binds, future=True)
+        if self.session_class is None:
+            self.session_class = async_sessionmaker(
+                bind=self.get_engine(), binds=self.table_binds, future=True)
+        return self.session_class
 
     @asynccontextmanager
     async def begin(self):
