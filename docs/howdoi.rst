@@ -235,23 +235,25 @@ If you are using the asynchronous version::
 ... run an arbitrary SQL statement on the database?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Use ``session.execute()`` along with ``db.text()``::
+Use ``session.execute()`` along with ``text()``::
+
+    from sqlalchemy import text
 
     with db.Session() as session:
-        sql = db.text('select * from user;')
+        sql = text('select * from user;')
         results = session.execute(sql).all()
 
 With the asynchronous version::
 
     async with db.Session() as session:
-        sql = db.text('select * from user;')
+        sql = text('select * from user;')
         results = (await session.execute(sql)).all()
 
 The asynchronous version also supports streaming the results of a raw SQL
 statement::
 
     async with db.session() as session:
-        sql = db.text('select * from user;')
+        sql = text('select * from user;')
         async for row in await session.stream(sql):
             print(row)
 
@@ -260,5 +262,5 @@ it supports binding parameters, which is useful in preventing SQL injection
 attacks::
 
     with db.Session() as session:
-        sql = db.text('select * from user where user.id = :user_id;')
+        sql = text('select * from user where user.id = :user_id;')
         results = session.execute(sql, params={'user_id': 5}).all()
