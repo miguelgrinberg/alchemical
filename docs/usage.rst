@@ -264,7 +264,7 @@ The Alchemical Flask extension imports its configuration from Flask's
 
 - ``ALCHEMICAL_DATABASE_URL``: the database connection URL.
 - ``ALCHEMICAL_BINDS``: a dictionary with database binds.
-- ``ALCHEMOCAL_ENGINE_OPTIONS``: optionl engine options to pass to SQLAlchemy.
+- ``ALCHEMICAL_ENGINE_OPTIONS``: optional engine options to pass to SQLAlchemy.
 - ``ALCHEMICAL_AUTOCOMMIT``: If set to ``True``, database sessions are
   auto-committed when the request ends (the default is ``False``).
 
