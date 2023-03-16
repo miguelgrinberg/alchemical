@@ -194,9 +194,10 @@ class Alchemical:
         :param bind: when binds are used, this argument selects which of the
                      binds to return an engine for.
         """
-        if self.engines is None:
+        if self.engines is None or self.engines.get(bind) is None:
             with self.lock:
-                if self.engines is None:  # pragma: no cover
+                if self.engines is None or \
+                        self.engines.get(bind) is None:  # pragma: no cover
                     self._create_engines()
         return self.engines.get(bind)
 

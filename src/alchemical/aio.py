@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 try:
     from sqlalchemy.ext.asyncio import async_sessionmaker  # only in 2.0+
-except ImportError:
+except ImportError:  # pragma: no cover
     from sqlalchemy.ext.asyncio import AsyncSession
     from sqlalchemy.orm import sessionmaker
 
