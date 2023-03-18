@@ -1,5 +1,13 @@
 # Alchemical change log
 
+**Release 0.7.0** - 2023-03-18
+
+- Disable "expire on commit" option for asynchronous sessions ([commit](https://github.com/miguelgrinberg/alchemical/commit/b5aeba48107358dbcd6932bebb544851eb4d592e))
+- Use `sessionmaker` to create sessions ([commit](https://github.com/miguelgrinberg/alchemical/commit/744705671bac8a1db8f339d780df5bf7f13356eb))
+- Minor alembic compatibility fix ([commit](https://github.com/miguelgrinberg/alchemical/commit/9760aef3b53c41a933b434649e3c90de59af0a45))
+- Fixed documentation typos ([commit](https://github.com/miguelgrinberg/alchemical/commit/e28cbc025bb7ff5da061cdb8bceee85ab714b31b))
+- Correct use of the `text()` function in documentation [#9](https://github.com/miguelgrinberg/alchemical/issues/9) ([commit](https://github.com/miguelgrinberg/alchemical/commit/dabd6898428422ef2aaa518911f051672cc26d1f))
+
 **Release 0.6.0** - 2022-11-27
 
 - Alembic integration ([commit](https://github.com/miguelgrinberg/alchemical/commit/4bc3f687647e20722105dac6831c8bf96becab5a))
