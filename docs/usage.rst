@@ -181,6 +181,8 @@ instance::
         id: Optional[int] = Field(default=None, primary_key=True)
         name: str = Field(max_length=128)
 
+.. _database-migrations-with-alembic:
+
 Database Migrations with Alembic
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -294,6 +296,13 @@ database migrations with Alembic is fully supported.
 
 Refer to the Flask-Migrate documentation for instructions. The Alchemical
 ``db`` object can be used in place of Flask-SQLAlchemy's ``db``.
+
+As an alternative, you can follow the instructions to set up
+:ref:`Database Migrations with Alembic <database-migrations-with-alembic>` in
+this documentation instead of using Flask-Migrate. If you opt to work with
+Alembic in this way and your Flask application uses the application factory
+pattern, a Flask application instance must be created, for example in *env.py*,
+so that the ``Alchemical`` object can access its configuration.
 
 Using with FastAPI
 ~~~~~~~~~~~~~~~~~~
