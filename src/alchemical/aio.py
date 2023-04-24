@@ -34,9 +34,11 @@ class Alchemical(BaseAlchemical):
                               Pass an empty dictionary to disable naming
                               conventions.
 
-    The database instances can be initialized without arguments, in which case
-    the :func:`Alchemical.initialize` method must be called later to perform
-    the initialization.
+    The database instances can be initialized in two phases, in which case the
+    :func:`Alchemical.initialize` method must be called later to complete the
+    initialization. Note that the `model_class` and `naming_convention`
+    arguments can only be passed in this first phase, while the remaining
+    arguments can be passed in either phase.
     """
 
     prefix_map = {

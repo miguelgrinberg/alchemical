@@ -169,12 +169,13 @@ class TestCore(unittest.TestCase):
         assert db.get_engine() is None
         db.drop_all()
 
-    def test_bad_init_arguments(self):
-        with pytest.raises(ValueError):
-            Alchemical(engine_options={'foo': 'bar'})
-        with pytest.raises(ValueError):
-            db = Alchemical()
-            db.initialize(engine_options={'foo': 'bar'})
+    def test_two_phase(self):
+        db = Alchemical(engine_options={'foo': 'bar'},
+                        session_options={'bar': 'foo'})
+        db.initialize('sqlite://', engine_options={'foo': 'baz'},
+                      session_options={'baz': 'foo'})
+        assert db.engine_options == {'foo': 'baz'}
+        assert db.session_options == {'baz': 'foo'}
 
 
 class TestCoreWithCustomBase(TestCore):

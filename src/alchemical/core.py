@@ -80,9 +80,11 @@ class Alchemical:
                               Pass an empty dictionary to disable naming
                               conventions.
 
-    The database instances can be initialized without arguments, in which case
-    the :func:`Alchemical.initialize` method must be called later to perform
-    the initialization.
+    The database instances can be initialized in two phases, in which case the
+    :func:`Alchemical.initialize` method must be called later to complete the
+    initialization. Note that the `model_class` and `naming_convention`
+    arguments can only be passed in this first phase, while the remaining
+    arguments can be passed in either phase.
     """
 
     prefix_map = {'postgres': 'postgresql'}
@@ -90,24 +92,27 @@ class Alchemical:
     def __init__(self, url=None, binds=None, engine_options=None,
                  session_options=None, model_class=None,
                  naming_convention=None):
-        self.metadatas = {}
+        self.engine_options = engine_options or {}
+        self.session_options = session_options or {}
         self.naming_convention = DEFAULT_NAMING_CONVENTION \
             if naming_convention is None else naming_convention
-        self._setup_sqlalchemy(model_class)
+
+        self.metadatas = {}
         self.lock = Lock()
         self.url = None
         self.binds = None
-        self.engine_options = {}
-        self.session_options = session_options or {}
         self.session_class = None
         self.engines = None
         self.table_binds = None
-        if url or binds:
-            self.initialize(url, binds=binds, engine_options=engine_options)
-        elif engine_options:
-            raise ValueError('"url" and/or "binds" must be set')
 
-    def initialize(self, url=None, binds=None, engine_options=None):
+        self._setup_sqlalchemy(model_class)
+        self.metadatas[None] = self.Model.metadata
+
+        if url or binds:
+            self.initialize(url, binds=binds)
+
+    def initialize(self, url=None, binds=None, engine_options=None,
+                   session_options=None):
         """Initialize the database instance.
 
         :param url: the database URL.
@@ -117,16 +122,19 @@ class Alchemical:
                       bind with the `__bind_key__` class attribute.
         :param engine_options: a dictionary with additional engine options to
                                pass to SQLAlchemy.
+        :param session_options: a dictionary with additional session options to
+                                use when creating sessions.
 
-        This method must be used when the instance is created without
-        arguments.
+        This method must be called explicitly to complete the initialization of
+        the instance the two-phase initialization method is used.
         """
         if url is None and binds is None:
             raise ValueError('"url" and/or "binds" must be set')
+
         self.url = url or self.url
         self.binds = binds or self.binds
         self.engine_options = engine_options or self.engine_options
-        self.metadatas[None] = self.Model.metadata
+        self.session_options = session_options or self.session_options
 
     def _setup_sqlalchemy(self, model_class):
         metaclass = type(model_class) if model_class else DeclarativeMeta
