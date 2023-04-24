@@ -1,5 +1,11 @@
 # Alchemical change log
 
+**Release 0.7.1** - 2023-04-25
+
+- Add `session_options` configuration option [#11](https://github.com/miguelgrinberg/alchemical/issues/11) ([commit](https://github.com/miguelgrinberg/alchemical/commit/baa93cc7a58b585c0ed0751b781db15a2f243068))
+- More flexible handling of initialization arguments ([commit](https://github.com/miguelgrinberg/alchemical/commit/72976b683fd350165925cd056696e6c254016eff))
+- Document how to use Alchemical and Alembic in a Flask application [#10](https://github.com/miguelgrinberg/alchemical/issues/10) ([commit](https://github.com/miguelgrinberg/alchemical/commit/cc443c187f27ce919849b2a3557f807bfa8d93fc))
+
 **Release 0.7.0** - 2023-03-18
 
 - Disable "expire on commit" option for asynchronous sessions ([commit](https://github.com/miguelgrinberg/alchemical/commit/b5aeba48107358dbcd6932bebb544851eb4d592e))
