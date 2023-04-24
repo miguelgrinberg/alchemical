@@ -24,8 +24,15 @@ class Alchemical(BaseAlchemical):
                   with the ``__bind_key__`` class attribute.
     :param engine_options: a dictionary with additional engine options to
                            pass to SQLAlchemy.
+    :param session_options: a dictionary with additional session options to
+                            use when creating sessions.
     :param model_class: a custom declarative base to use as parent class for
                         ``db.Model``.
+    :param naming_convention: a dictionary with naming conventions to pass to
+                              SQLAlchemy. The naming convention recommended in
+                              the SQLAlchemy documentation is used by default.
+                              Pass an empty dictionary to disable naming
+                              conventions.
 
     The database instances can be initialized without arguments, in which case
     the :func:`Alchemical.initialize` method must be called later to perform
@@ -40,9 +47,12 @@ class Alchemical(BaseAlchemical):
     }
 
     def __init__(self, url=None, binds=None, engine_options=None,
-                 model_class=None):
+                 session_options=None, model_class=None,
+                 naming_convention=None):
         super().__init__(url=url, binds=binds, engine_options=engine_options,
-                         model_class=model_class)
+                         session_options=session_options,
+                         model_class=model_class,
+                         naming_convention=naming_convention)
         self._sync = None
 
     def _create_engine(self, url, *args, **kwargs):
@@ -93,9 +103,10 @@ class Alchemical(BaseAlchemical):
         be called when the session isn't needed anymore.
         """
         if self.session_class is None:
+            options = {'future': True, 'expire_on_commit': False}
+            options.update(self.session_options)
             self.session_class = async_sessionmaker(
-                bind=self.get_engine(), binds=self.table_binds, future=True,
-                expire_on_commit=False)
+                bind=self.get_engine(), binds=self.table_binds, **options)
         return self.session_class
 
     @asynccontextmanager

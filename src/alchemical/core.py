@@ -70,6 +70,8 @@ class Alchemical:
                   with the ``__bind_key__`` class attribute.
     :param engine_options: a dictionary with additional engine options to
                            pass to SQLAlchemy.
+    :param session_options: a dictionary with additional session options to
+                            use when creating sessions.
     :param model_class: a custom declarative base to use as parent class for
                         ``db.Model``.
     :param naming_convention: a dictionary with naming conventions to pass to
@@ -77,6 +79,7 @@ class Alchemical:
                               the SQLAlchemy documentation is used by default.
                               Pass an empty dictionary to disable naming
                               conventions.
+
     The database instances can be initialized without arguments, in which case
     the :func:`Alchemical.initialize` method must be called later to perform
     the initialization.
@@ -85,7 +88,8 @@ class Alchemical:
     prefix_map = {'postgres': 'postgresql'}
 
     def __init__(self, url=None, binds=None, engine_options=None,
-                 model_class=None, naming_convention=None):
+                 session_options=None, model_class=None,
+                 naming_convention=None):
         self.metadatas = {}
         self.naming_convention = DEFAULT_NAMING_CONVENTION \
             if naming_convention is None else naming_convention
@@ -94,6 +98,7 @@ class Alchemical:
         self.url = None
         self.binds = None
         self.engine_options = {}
+        self.session_options = session_options or {}
         self.session_class = None
         self.engines = None
         self.table_binds = None
@@ -247,8 +252,10 @@ class Alchemical:
         called when the session isn't needed anymore.
         """
         if self.session_class is None:
+            options = {'future': True}
+            options.update(self.session_options)
             self.session_class = sessionmaker(
-                bind=self.get_engine(), binds=self.table_binds, future=True)
+                bind=self.get_engine(), binds=self.table_binds, **options)
         return self.session_class
 
     @contextmanager
