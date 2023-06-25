@@ -8,7 +8,8 @@ config = context.config
 
 # import the application's Alchemical instance
 try:
-    import_mod, db_name = config.get_main_option('alchemical_db').split(':')
+    import_mod, db_name = config.get_main_option('alchemical_db', '').split(
+        ':')
     db = getattr(import_module(import_mod), db_name)
 except (ModuleNotFoundError, AttributeError):
     raise ValueError(
