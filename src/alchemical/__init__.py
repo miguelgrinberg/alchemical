@@ -1,3 +1,3 @@
-from .core import Alchemical  # noqa: F401
+from .core import Alchemical, Model  # noqa: F401
 
-__all__ = ['Alchemical']
+__all__ = ['Alchemical', 'Model']

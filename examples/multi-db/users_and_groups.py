@@ -1,13 +1,7 @@
 from sqlalchemy import Column, Integer, String
-from alchemical import Alchemical
+from alchemical import Alchemical, Model
 
-db = Alchemical(binds={
-    'users': 'sqlite:///users.sqlite',
-    'groups': 'sqlite:///groups.sqlite'
-})
-
-
-class User(db.Model):
+class User(Model):
     __bind_key__ = 'users'
     id = Column(Integer, primary_key=True)
     name = Column(String(128))
@@ -16,7 +10,7 @@ class User(db.Model):
         return f'<User {self.name}>'
 
 
-class Group(db.Model):
+class Group(Model):
     __bind_key__ = 'groups'
     id = Column(Integer, primary_key=True)
     name = Column(String(128))
@@ -25,6 +19,10 @@ class Group(db.Model):
         return f'<Group {self.name}>'
 
 
+db = Alchemical(binds={
+    'users': 'sqlite:///users.sqlite',
+    'groups': 'sqlite:///groups.sqlite'
+})
 db.drop_all()
 db.create_all()
 

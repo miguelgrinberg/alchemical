@@ -19,18 +19,18 @@ a few users, and finally prints the users to the console.
 ::
 
     from sqlalchemy import Column, Integer, String
-    from alchemical import Alchemical
-
-    db = Alchemical('sqlite:///users.sqlite')
+    from alchemical import Alchemical, Model
 
 
-    class User(db.Model):
+    class User(Model):
         id = Column(Integer, primary_key=True)
         name = Column(String(128))
 
         def __repr__(self):
             return f'<User {self.name}'
 
+
+    db = Alchemical('sqlite:///users.sqlite')
     db.drop_all()
     db.create_all()
 
@@ -45,12 +45,9 @@ The next example implements the same application, but using ``asyncio``::
 
     import asyncio
     from sqlalchemy import Column, Integer, String
-    from alchemical.aio import Alchemical
+    from alchemical.aio import Alchemical, Model
 
-    db = Alchemical('sqlite:///users.sqlite')
-
-
-    class User(db.Model):
+    class User(Model):
         id = Column(Integer, primary_key=True)
         name = Column(String(128))
 
@@ -59,6 +56,7 @@ The next example implements the same application, but using ``asyncio``::
 
 
     async def main():
+        db = Alchemical('sqlite:///users.sqlite')
         await db.drop_all()
         await db.create_all()
 

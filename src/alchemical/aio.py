@@ -11,7 +11,8 @@ except ImportError:  # pragma: no cover
         return sessionmaker(*args, **kwargs, class_=AsyncSession)
 
 from sqlalchemy.util.concurrency import greenlet_spawn
-from .core import Alchemical as BaseAlchemical
+from .core import BaseAlchemical, Alchemical as SyncAlchemical, \
+    Model  # noqa: F401
 
 
 class Alchemical(BaseAlchemical):
@@ -26,8 +27,9 @@ class Alchemical(BaseAlchemical):
                            pass to SQLAlchemy.
     :param session_options: a dictionary with additional session options to
                             use when creating sessions.
-    :param model_class: a custom declarative base to use as parent class for
-                        ``db.Model``.
+    :param model_class: a custom declarative base class to use instead of the
+                        default one. This class, extended with Alchemical
+                        functionality, can be accessed as ``db.Model``. 
     :param naming_convention: a dictionary with naming conventions to pass to
                               SQLAlchemy. The naming convention recommended in
                               the SQLAlchemy documentation is used by default.
@@ -146,10 +148,9 @@ class Alchemical(BaseAlchemical):
         Note: this method is a coroutine.
         """
         if self._sync is None:
-            self._sync = BaseAlchemical(url=self.url, binds=self.binds,
-                                        engine_options=self.engine_options)
-            self._sync.Model = self.Model  # use the same declarative base
-            self._sync.metadatas = self.metadatas
+            self._sync = SyncAlchemical(url=self.url, binds=self.binds,
+                                        engine_options=self.engine_options,
+                                        model_class=self.Model)
             self.get_engine()  # this makes sure engines are created
             self._sync.engines = {bind: engine.sync_engine
                                   for bind, engine in self.engines.items()}

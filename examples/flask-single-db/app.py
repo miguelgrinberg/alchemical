@@ -1,18 +1,17 @@
 from flask import Flask
 from sqlalchemy import Column, Integer, String
-from alchemical.flask import Alchemical
+from alchemical.flask import Alchemical, Model
 from flask_migrate import Migrate
+
+class User(Model):
+    id = Column(Integer, primary_key=True)
+    name = Column(String(128))
+
 
 app = Flask(__name__)
 app.config['ALCHEMICAL_DATABASE_URI'] = 'sqlite:///app.db'
-
 db = Alchemical(app)
 migrate = Migrate(app, db)
-
-
-class User(db.Model):
-    id = Column(Integer, primary_key=True)
-    name = Column(String(128))
 
 
 @app.route('/')

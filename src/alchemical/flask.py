@@ -1,5 +1,5 @@
 from flask import g
-from .core import Alchemical as BaseAlchemical
+from .core import Alchemical as BaseAlchemical, Model  # noqa: F401
 
 
 class Alchemical(BaseAlchemical):

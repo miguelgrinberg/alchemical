@@ -8,14 +8,18 @@ instance has been created and stored in a global variable named ``db``.
 ... create a database model?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The ``Alchemical`` instance provides a ``db.Model`` class to be used as a base
+The ``Alchemical`` package provides a ``Model`` class to be used as a base
 class for database models::
 
     from sqlalchemy import Column, Integer, String
+    from alchemical import Model
 
-    class User(db.Model):
+    class User(Model):
         id = Column(Integer, primary_key=True)
         name = Column(String(128))
+
+The base ``Model`` class is also accessible as a ``db.Model`` attribute of the
+``Alchemical`` instance.
 
 To learn more about how to define database models, consult the
 `SQLAlchemy ORM documentation <https://docs.sqlalchemy.org/en/14/orm/index.html>`_.

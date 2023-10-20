@@ -3,7 +3,7 @@ import re
 from threading import Lock
 
 from sqlalchemy import create_engine, MetaData, select, update, delete
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from sqlalchemy.orm.decl_api import DeclarativeMeta
 
 DEFAULT_NAMING_CONVENTION = {
@@ -23,6 +23,24 @@ class TableNamer:  # pragma: no cover
                 r'((?<=[a-z0-9])[A-Z]|(?!^)[A-Z](?=[a-z]))', r'_\1',
                 type.__name__).lower().lstrip("_")
         return getattr(type, '__tablename__', None)
+
+
+class MetadataCollection:
+    """A class that maintains metadata objects for each bind and returns the
+    appropriate metadata for each model."""
+    metadatas = {}
+
+    def __get__(self, obj, type):
+        if type.__dict__.get('__metadata__') is None:
+            bind_key = getattr(type, '__bind_key__', None)
+            if bind_key not in self.metadatas:
+                self.metadatas[bind_key] = MetaData()
+            type.__metadata__ = self.metadatas[bind_key]
+        return type.__metadata__
+
+    @classmethod
+    def reset(cls):
+        cls.metadatas = {}
 
 
 class BaseModel:
@@ -60,35 +78,12 @@ class BaseModel:
         return delete(cls)
 
 
-class Alchemical:
-    """Create a database instance.
+class Model(BaseModel, DeclarativeBase):
+    __abstract__ = True
+    metadata = MetadataCollection()
 
-    :param url: the database URL.
-    :param binds: a dictionary with additional databases to manage with this
-                  instance. The keys are the names, and the values are the
-                  database URLs. A model is then assigned to a specific bind
-                  with the ``__bind_key__`` class attribute.
-    :param engine_options: a dictionary with additional engine options to
-                           pass to SQLAlchemy.
-    :param session_options: a dictionary with additional session options to
-                            use when creating sessions.
-    :param model_class: a custom declarative base to use as parent class for
-                        ``db.Model``.
-    :param naming_convention: a dictionary with naming conventions to pass to
-                              SQLAlchemy. The naming convention recommended in
-                              the SQLAlchemy documentation is used by default.
-                              Pass an empty dictionary to disable naming
-                              conventions.
 
-    The database instances can be initialized in two phases, in which case the
-    :func:`Alchemical.initialize` method must be called later to complete the
-    initialization. Note that the `model_class` and `naming_convention`
-    arguments can only be passed in this first phase, while the remaining
-    arguments can be passed in either phase.
-    """
-
-    prefix_map = {'postgres': 'postgresql'}
-
+class BaseAlchemical:
     def __init__(self, url=None, binds=None, engine_options=None,
                  session_options=None, model_class=None,
                  naming_convention=None):
@@ -97,16 +92,13 @@ class Alchemical:
         self.naming_convention = DEFAULT_NAMING_CONVENTION \
             if naming_convention is None else naming_convention
 
-        self.metadatas = {}
         self.lock = Lock()
         self.url = None
         self.binds = None
         self.session_class = None
         self.engines = None
         self.table_binds = None
-
-        self._setup_sqlalchemy(model_class)
-        self.metadatas[None] = self.Model.metadata
+        self.Model = self._get_declarative_base(model_class)
 
         if url or binds:
             self.initialize(url, binds=binds)
@@ -136,33 +128,26 @@ class Alchemical:
         self.engine_options = engine_options or self.engine_options
         self.session_options = session_options or self.session_options
 
-    def _setup_sqlalchemy(self, model_class):
-        metaclass = type(model_class) if model_class else DeclarativeMeta
+    def _get_declarative_base(self, model_class):
+        if model_class is None:
+            return Model
 
-        class Meta(metaclass):
-            def __init__(cls, name, bases, d, **kwargs):
-                bind_key = d.pop('__bind_key__', None)
-                if bind_key not in self.metadatas:
-                    self.metadatas[bind_key] = MetaData(
-                        naming_convention=self.naming_convention)
-                cls.metadata = self.metadatas[bind_key]
-                super().__init__(name, bases, d, **kwargs)
-                if bind_key and hasattr(cls, '__table__'):
-                    cls.__table__.info['bind_key'] = bind_key
+        if not issubclass(model_class, BaseModel):
+            # if the given model class does not have the Alchemical additions
+            # we create a subclass of it with them
+            class AlchemicalModel(BaseModel, model_class):
+                __abstract__ = True
+                metadata = MetadataCollection()
 
-        if not model_class:
-            self.Model = declarative_base(cls=BaseModel, metaclass=Meta)
-        else:
-            class_dict = {k: v for k, v in BaseModel.__dict__.items()
-                          if not k.startswith('__')}
-            class_dict['__abstract__'] = True
-            class_dict['__tablename__'] = TableNamer()
-            self.Model = Meta('Base', (model_class, ), class_dict)
+            return AlchemicalModel
+        return model_class
 
     def _create_engines(self):
         options = (self.engine_options if not callable(self.engine_options)
                    else self.engine_options(None))
         options.setdefault('future', True)
+        for metadata in self.metadatas.values():
+            metadata.naming_convention = self.naming_convention
         self.engines = {}
         if self.url:
             self.engines[None] = self._create_engine(
@@ -184,13 +169,12 @@ class Alchemical:
                 break
         return url
 
-    def _create_engine(self, url, *args, **kwargs):
-        return create_engine(url, *args, **kwargs)
-
     @property
     def metadata(self):
         # Only for compatibility with Flask-SQLAlchemy.
-        # The self.metadatas dictionary indexed by bind should be preferred.
+
+        # The MetadataCollector.metadatas dictionary indexed by bind should be
+        # preferred.
         if self.binds is None or len(self.binds) == 0:
             return self.Model.metadata
 
@@ -200,6 +184,10 @@ class Alchemical:
             for table in metadata.tables.values():
                 table.to_metadata(m)
         return m
+
+    @property
+    def metadatas(self):
+        return MetadataCollection.metadatas
 
     def get_engine(self, bind=None):
         """Return the SQLAlchemy engine object.
@@ -216,6 +204,44 @@ class Alchemical:
 
     def bind_names(self):
         return [bind for bind in self.engines if bind is not None]
+
+    def is_async(self):
+        """Return True if this database instance is asynchronous."""
+        return False
+
+
+class Alchemical(BaseAlchemical):
+    """Create a database instance.
+
+    :param url: the database URL.
+    :param binds: a dictionary with additional databases to manage with this
+                  instance. The keys are the names, and the values are the
+                  database URLs. A model is then assigned to a specific bind
+                  with the ``__bind_key__`` class attribute.
+    :param engine_options: a dictionary with additional engine options to
+                           pass to SQLAlchemy.
+    :param session_options: a dictionary with additional session options to
+                            use when creating sessions.
+    :param model_class: a custom declarative base class to use instead of the
+                        default one. This class, extended with Alchemical
+                        functionality, can be accessed as ``db.Model``. 
+    :param naming_convention: a dictionary with naming conventions to pass to
+                              SQLAlchemy. The naming convention recommended in
+                              the SQLAlchemy documentation is used by default.
+                              Pass an empty dictionary to disable naming
+                              conventions.
+
+    The database instances can be initialized in two phases, in which case the
+    :func:`Alchemical.initialize` method must be called later to complete the
+    initialization. Note that the `model_class` and `naming_convention`
+    arguments can only be passed in this first phase, while the remaining
+    arguments can be passed in either phase.
+    """
+
+    prefix_map = {'postgres': 'postgresql'}
+
+    def _create_engine(self, url, *args, **kwargs):
+        return create_engine(url, *args, **kwargs)
 
     def create_all(self):
         """Create the database tables.
@@ -284,7 +310,3 @@ class Alchemical:
         with self.Session() as session:
             with session.begin():
                 yield session
-
-    def is_async(self):
-        """Return True if this database instance is asynchronous."""
-        return False

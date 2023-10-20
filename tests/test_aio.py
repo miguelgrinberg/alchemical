@@ -3,8 +3,9 @@ import sqlite3
 import unittest
 import pytest
 from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, clear_mappers
 from alchemical.aio import Alchemical
+from alchemical.core import MetadataCollection
 
 
 def async_test(f):
@@ -15,6 +16,10 @@ def async_test(f):
 
 
 class TestAio(unittest.TestCase):
+    def setUp(self):
+        MetadataCollection.reset()
+        clear_mappers()
+
     @async_test
     async def test_read_write(self):
         db = Alchemical('sqlite://')

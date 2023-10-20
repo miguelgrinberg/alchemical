@@ -2,11 +2,16 @@ import sqlite3
 import unittest
 import pytest
 from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship, declarative_base
+from sqlalchemy.orm import relationship, declarative_base, clear_mappers
 from alchemical import Alchemical
+from alchemical.core import MetadataCollection
 
 
 class TestCore(unittest.TestCase):
+    def setUp(self):
+        MetadataCollection.reset()
+        clear_mappers()
+
     def create_alchemical(self, url=None, binds=None):
         if not binds:
             return Alchemical(url)

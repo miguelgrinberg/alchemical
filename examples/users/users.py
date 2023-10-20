@@ -1,10 +1,9 @@
 from sqlalchemy import Column, Integer, String
-from alchemical import Alchemical
-
-db = Alchemical('sqlite:///users.sqlite')
+from alchemical import Alchemical, Model
 
 
-class User(db.Model):
+
+class User(Model):
     id = Column(Integer, primary_key=True)
     name = Column(String(128))
 
@@ -12,6 +11,7 @@ class User(db.Model):
         return f'<User {self.name}>'
 
 
+db = Alchemical('sqlite:///users.sqlite')
 db.drop_all()
 db.create_all()
 

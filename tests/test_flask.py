@@ -3,31 +3,28 @@ import unittest
 from flask import Flask
 import pytest
 from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import clear_mappers
 from alchemical.flask import Alchemical
-
-db = Alchemical()
-
-
-class User(db.Model):
-    id = Column(Integer, primary_key=True)
-    name = Column(String(128))
-
-
-class User1(db.Model):
-    __tablename__ = 'users1'
-    __bind_key__ = 'one'
-    id = Column(Integer, primary_key=True)
-    name = Column(String(128))
-
-
-class User2(db.Model):
-    __bind_key__ = 'two'
-    id = Column(Integer, primary_key=True)
-    name = Column(String(128))
+from alchemical.core import MetadataCollection
 
 
 class TestFlask(unittest.TestCase):
+    def setUp(self):
+        MetadataCollection.reset()
+        clear_mappers()
+
+    def create_db(self):
+        db = Alchemical()
+        
+        return db
+
     def test_read_write(self):
+        db = Alchemical()
+
+        class User(db.Model):
+            id = Column(Integer, primary_key=True)
+            name = Column(String(128))
+
         app = Flask(__name__)
         app.config['ALCHEMICAL_DATABASE_URL'] = 'sqlite://'
         db.init_app(app)
@@ -66,6 +63,23 @@ class TestFlask(unittest.TestCase):
         assert len(all) == 0
 
     def test_binds(self):
+        db = Alchemical()
+
+        class User(db.Model):
+            id = Column(Integer, primary_key=True)
+            name = Column(String(128))
+
+        class User1(db.Model):
+            __tablename__ = 'users1'
+            __bind_key__ = 'one'
+            id = Column(Integer, primary_key=True)
+            name = Column(String(128))
+
+        class User2(db.Model):
+            __bind_key__ = 'two'
+            id = Column(Integer, primary_key=True)
+            name = Column(String(128))
+
         app = Flask(__name__)
         app.config['ALCHEMICAL_DATABASE_URL'] = 'sqlite://'
         app.config['ALCHEMICAL_BINDS'] = \
@@ -121,6 +135,13 @@ class TestFlask(unittest.TestCase):
         conn.close()
 
     def test_db_session(self):
+        db = Alchemical()
+
+        class User(db.Model):
+            id = Column(Integer, primary_key=True)
+            name = Column(String(128))
+
+        db = self.create_db()
         app = Flask(__name__)
         app.config['ALCHEMICAL_DATABASE_URL'] = 'sqlite://'
         db.init_app(app)
@@ -144,6 +165,13 @@ class TestFlask(unittest.TestCase):
         assert len(all) == 3
 
     def test_db_session_autocommit(self):
+        db = Alchemical()
+
+        class User(db.Model):
+            id = Column(Integer, primary_key=True)
+            name = Column(String(128))
+
+        db = self.create_db()
         app = Flask(__name__)
         app.config['ALCHEMICAL_DATABASE_URL'] = 'sqlite://'
         app.config['ALCHEMICAL_AUTOCOMMIT'] = True
@@ -161,11 +189,13 @@ class TestFlask(unittest.TestCase):
         assert len(all) == 3
 
     def test_bad_config(self):
+        db = Alchemical()
         app = Flask(__name__)
         with pytest.raises(ValueError):
             db.init_app(app)
 
     def test_alternate_config(self):
+        db = Alchemical()
         app = Flask(__name__)
         app.config['ALCHEMICAL_DATABASE_URI'] = 'sqlite://'
         db.init_app(app)  # should not raise

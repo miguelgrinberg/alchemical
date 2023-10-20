@@ -30,14 +30,12 @@ Defining Database Models
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 When working with Alchemical, models are created according to SQLAlchemy's
-rules, using ``db.Model`` as the base class::
+rules, using ``Model`` as the base class::
 
     from sqlalchemy import Column, Integer, String, ForeignKey
-    from alchemical import Alchemical
+    from alchemical import Model
 
-    db = Alchemical('sqlite:///data.sqlite')
-
-    class User(db.Model):
+    class User(Model):
         id = Column(Integer, primary_key=True)
         name = Column(String)
         fullname = Column(String)
@@ -50,7 +48,7 @@ Alchemical automatically names each database table with the name of its
 corresponding  model class converted to snake case. To override the automatic
 naming, a ``__tablename__`` attribute can be added to the model class::
 
-    class User(db.Model):
+    class User(Model):
         __tablename__ = 'users'
 
         id = Column(Integer, primary_key=True)
@@ -129,7 +127,7 @@ connect to Postgres and in-memory SQLite databases::
 When using binds, each model class must indicate which of the binds it belongs
 to with the ``__bind_key__`` attribute::
 
-    class User(db.Model):
+    class User(Model):
         __bind_key__ = 'users'
 
         id = Column(Integer, primary_key=True)
@@ -164,6 +162,14 @@ there are no differences.
 
 Using Pydantic Models
 ~~~~~~~~~~~~~~~~~~~~~
+
+.. note::Pydantic and SQLModel are currently not supported
+
+    This section is outdated. The SQLModel project does not support
+    SQLAlchemy 2.0 at this time, so it is incompatible with Alchemical, which
+    has dropped support for previous SQLAlchemy versions. Reinstating Pydantic
+    and SQLModel support will be evaluated once these project add compatibility
+    with SQLAlchemy 2.0.
 
 Alchemical supports the use of model classes based on
 `Pydantic <https://pydantic-docs.helpmanual.io/>`_ with the
@@ -315,14 +321,16 @@ Example::
 
     from fastapi import FastAPI
     from sqlalchemy import Column, Integer, String
-    from alchemical.aio import Alchemical
+    from alchemical.aio import Alchemical, Model
+
+
+    class User(Model):
+        id = Column(Integer, primary_key=True)
+        name = Column(String(128))
+
 
     app = FastAPI()
     db = Alchemical('sqlite:///app.db')
-
-    class User(db.Model):
-        id = Column(Integer, primary_key=True)
-        name = Column(String(128))
 
     @app.get('/')
     async def index():

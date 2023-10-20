@@ -2,15 +2,15 @@ import asyncio
 import sys
 from fastapi import FastAPI
 from sqlalchemy import Column, Integer, String
-from alchemical.aio import Alchemical
+from alchemical.aio import Alchemical, Model
+
+class User(Model):
+    id = Column(Integer, primary_key=True)
+    name = Column(String(128))
+
 
 app = FastAPI()
 db = Alchemical('sqlite:///app.db')
-
-
-class User(db.Model):
-    id = Column(Integer, primary_key=True)
-    name = Column(String(128))
 
 
 @app.get('/')
@@ -26,9 +26,10 @@ async def add():
         session.add(User(name='test'))
 
 
-if sys.argv[1] == 'init':
+arg = sys.argv[1] if len(sys.argv) > 1 else None
+if arg == 'init':
     asyncio.run(db.create_all())
-elif sys.argv[1] == 'add':
+elif arg == 'add':
     asyncio.run(add())
-else:
+elif __name__ == '__main__':
     raise RuntimeError('Invalid command')
