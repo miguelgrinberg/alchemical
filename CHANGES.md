@@ -1,5 +1,16 @@
 # Alchemical change log
 
+**Release 1.0.0** - 2023-10-28
+
+- Replace `db.Model` with `Model` through the `DeclarativeBase` class ([commit #1](https://github.com/miguelgrinberg/alchemical/commit/02d54da8ff4a143953877353477dc4a84dfe8525) [commit #2](https://github.com/miguelgrinberg/alchemical/commit/964e0784607104a828817119c2080d78d4a10278))
+- Link to stable documentation pages instead of latest ([commit](https://github.com/miguelgrinberg/alchemical/commit/fdd91934796e1ad1cbd89a9bcd8dc2b4262335a5))
+- Added readme files for all examples ([commit](https://github.com/miguelgrinberg/alchemical/commit/65b0992db283857b9bb50fb58a6bfbb41ae46ab9))
+- Update docs and examples to use type hints for column definitions ([commit](https://github.com/miguelgrinberg/alchemical/commit/1b56e0613d98e6e14bb8380ec9084d45f3f959f7))
+- Expanded documentation on how to create binds ([commit](https://github.com/miguelgrinberg/alchemical/commit/5cefcf87c6bec25332d02cee0658c4853f1233f3))
+- Remove outdated examples (aioflask and pydantic) ([commit](https://github.com/miguelgrinberg/alchemical/commit/82cef97693453cd70f47823c5fd5433c542cc562))
+- Remove dependency on Flask-Login in Flaskr example ([commit](https://github.com/miguelgrinberg/alchemical/commit/b35aa55e569fb3ab690122e43575046e384d9393))
+- Migrate Python package metadata to pyproject.toml ([commit](https://github.com/miguelgrinberg/alchemical/commit/54903b502a91c92baeeaa4a313c09ba07adb8600))
+
 **Release 0.7.1** - 2023-04-25
 
 - Add `session_options` configuration option [#11](https://github.com/miguelgrinberg/alchemical/issues/11) ([commit](https://github.com/miguelgrinberg/alchemical/commit/baa93cc7a58b585c0ed0751b781db15a2f243068))
