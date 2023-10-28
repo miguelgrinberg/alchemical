@@ -1,5 +1,9 @@
 # Alchemical change log
 
+**Release 1.0.1** - 2023-10-29
+
+- Use default `MetaData()` object instead of creating a new one ([commit](https://github.com/miguelgrinberg/alchemical/commit/32c3a035b3a5e3b4d1fe2159cb9c711d7345d0c6))
+
 **Release 1.0.0** - 2023-10-28
 
 - Replace `db.Model` with `Model` through the `DeclarativeBase` class ([commit #1](https://github.com/miguelgrinberg/alchemical/commit/02d54da8ff4a143953877353477dc4a84dfe8525) [commit #2](https://github.com/miguelgrinberg/alchemical/commit/964e0784607104a828817119c2080d78d4a10278))
