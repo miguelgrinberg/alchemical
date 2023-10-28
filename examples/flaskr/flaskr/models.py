@@ -1,14 +1,12 @@
 from werkzeug.security import check_password_hash
 from werkzeug.security import generate_password_hash
 from flask import url_for
-from flask_login import UserMixin
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, func
 from sqlalchemy.orm import relationship
+from alchemical import Model
 
-from flaskr import db
 
-
-class User(UserMixin, db.Model):
+class User(Model):
     id = Column(Integer, primary_key=True)
     username = Column(String, unique=True, nullable=False)
     password_hash = Column(String, nullable=False)
@@ -26,7 +24,7 @@ class User(UserMixin, db.Model):
         return check_password_hash(self.password_hash, value)
 
 
-class Post(db.Model):
+class Post(Model):
     id = Column(Integer, primary_key=True)
     author_id = Column(ForeignKey(User.id), nullable=False)
     created = Column(

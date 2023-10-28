@@ -2,7 +2,6 @@ from sqlalchemy import Column, Integer, String
 from alchemical import Alchemical, Model
 
 
-
 class User(Model):
     id = Column(Integer, primary_key=True)
     name = Column(String(128))

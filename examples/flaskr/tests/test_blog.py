@@ -24,7 +24,7 @@ def test_index(client, auth):
 @pytest.mark.parametrize("path", ("/create", "/1/update", "/1/delete"))
 def test_login_required(client, path):
     response = client.post(path)
-    assert "/auth/login?next=" in response.headers["Location"]
+    assert "/auth/login" in response.headers["Location"]
 
 
 def test_author_required(app, client, auth):

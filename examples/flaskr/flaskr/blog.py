@@ -1,14 +1,14 @@
 from flask import Blueprint
 from flask import flash
+from flask import g
 from flask import redirect
 from flask import render_template
 from flask import request
 from flask import url_for
 from werkzeug.exceptions import abort
-from flask_login import current_user
-from flask_login import login_required
 
 from flaskr import db
+from flaskr.auth import login_required
 from flaskr.models import Post
 
 bp = Blueprint("blog", __name__)
@@ -36,7 +36,7 @@ def get_post(id, check_author=True):
     if post is None:
         abort(404, f"Post id {id} doesn't exist.")
 
-    if check_author and post.author != current_user:
+    if check_author and post.author != g.user:
         abort(403)
 
     return post
@@ -57,7 +57,7 @@ def create():
         if error is not None:
             flash(error)
         else:
-            db.session.add(Post(title=title, body=body, author=current_user))
+            db.session.add(Post(title=title, body=body, author=g.user))
             db.session.commit()
             return redirect(url_for("blog.index"))
 

@@ -3,7 +3,7 @@ import unittest
 import pytest
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship, declarative_base, clear_mappers
-from alchemical import Alchemical, Model
+from alchemical import Alchemical
 
 
 class TestCore(unittest.TestCase):

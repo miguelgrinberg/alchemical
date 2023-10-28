@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from sqlalchemy import Column, Integer, String
 from alchemical.aio import Alchemical, Model
 
+
 class User(Model):
     id = Column(Integer, primary_key=True)
     name = Column(String(128))

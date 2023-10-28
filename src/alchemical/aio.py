@@ -29,7 +29,7 @@ class Alchemical(BaseAlchemical):
                             use when creating sessions.
     :param model_class: a custom declarative base class to use instead of the
                         default one. This class, extended with Alchemical
-                        functionality, can be accessed as ``db.Model``. 
+                        functionality, can be accessed as ``db.Model``.
     :param naming_convention: a dictionary with naming conventions to pass to
                               SQLAlchemy. The naming convention recommended in
                               the SQLAlchemy documentation is used by default.

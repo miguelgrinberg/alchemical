@@ -4,11 +4,8 @@ import click
 from flask import Flask
 from flask.cli import with_appcontext
 from alchemical.flask import Alchemical
-from flask_login import LoginManager
 
 db = Alchemical()
-login = LoginManager()
-login.login_view = 'auth.login'
 
 
 def create_app(test_config=None):
@@ -40,9 +37,6 @@ def create_app(test_config=None):
     # initialize Flask-Alchemical and the init-db command
     db.init_app(app)
     app.cli.add_command(init_db_command)
-
-    # initialize Flask-Login
-    login.init_app(app)
 
     # apply the blueprints to the app
     from flaskr import auth, blog

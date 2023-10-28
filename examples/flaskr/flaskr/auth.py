@@ -1,22 +1,44 @@
+import functools
+
 from flask import Blueprint
 from flask import flash
+from flask import g
 from flask import redirect
 from flask import render_template
 from flask import request
+from flask import session
 from flask import url_for
-from flask_login import login_user
-from flask_login import logout_user
 from sqlalchemy.exc import IntegrityError
 
-from flaskr import db, login
+from flaskr import db
 from flaskr.models import User
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 
-@login.user_loader
-def load_user(id):
-    return db.session.get(User, int(id))
+def login_required(view):
+    """View decorator that redirects anonymous users to the login page."""
+
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if g.user is None:
+            return redirect(url_for("auth.login"))
+
+        return view(**kwargs)
+
+    return wrapped_view
+
+
+@bp.before_app_request
+def load_logged_in_user():
+    """If a user id is stored in the session, load the user object from
+    the database into ``g.user``."""
+    user_id = session.get("user_id")
+
+    if user_id is None:
+        g.user = None
+    else:
+        g.user = db.session.get(User, int(user_id))
 
 
 @bp.route("/register", methods=("GET", "POST"))
@@ -60,7 +82,7 @@ def login():
         password = request.form["password"]
         error = None
 
-        query = User.select().filter_by(username=username)
+        query = User.select().where(User.username == username)
         user = db.session.scalar(query)
 
         if user is None:
@@ -70,7 +92,8 @@ def login():
 
         if error is None:
             # store the user id in a new session and return to the index
-            login_user(user)
+            session.clear()
+            session["user_id"] = user.id
             return redirect(url_for("index"))
 
         flash(error)
@@ -81,5 +104,5 @@ def login():
 @bp.route("/logout")
 def logout():
     """Clear the current session, including the stored user id."""
-    logout_user()
+    session.clear()
     return redirect(url_for("index"))

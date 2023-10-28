@@ -15,7 +15,7 @@ def test_register(client, app):
 
     # test that the user was inserted into the database
     with app.app_context():
-        query = User.select().filter_by(username="a")
+        query = User.select().where(User.username == "a")
         assert db.session.scalar(query) is not None
 
 

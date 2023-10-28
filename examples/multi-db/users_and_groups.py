@@ -1,7 +1,6 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
 from alchemical import Alchemical, Model
-
 
 
 class User(Model):

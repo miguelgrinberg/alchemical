@@ -14,7 +14,6 @@ class TestFlask(unittest.TestCase):
 
     def create_db(self):
         db = Alchemical()
-        
         return db
 
     def test_read_write(self):
