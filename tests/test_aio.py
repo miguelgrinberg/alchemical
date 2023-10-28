@@ -2,8 +2,8 @@ import asyncio
 import sqlite3
 import unittest
 import pytest
-from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship, clear_mappers
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship, clear_mappers
 from alchemical.aio import Alchemical, Model
 
 
@@ -25,8 +25,8 @@ class TestAio(unittest.TestCase):
         assert db.is_async()
 
         class User(db.Model):
-            id = Column(Integer, primary_key=True)
-            name = Column(String(128))
+            id: Mapped[int] = mapped_column(primary_key=True)
+            name: Mapped[str]
 
         await db.create_all()
         assert db.metadatas[None] == User.metadata
@@ -69,26 +69,26 @@ class TestAio(unittest.TestCase):
 
         class User(db.Model):
             __tablename__ = 'users'
-            id = Column(Integer, primary_key=True)
-            name = Column(String(128))
+            id: Mapped[int] = mapped_column(primary_key=True)
+            name: Mapped[str]
 
         class User1(db.Model):
             __tablename__ = 'users'
             __bind_key__ = 'one'
-            id = Column(Integer, primary_key=True)
-            name = Column(String(128))
+            id: Mapped[int] = mapped_column(primary_key=True)
+            name: Mapped[str]
 
         class User2(db.Model):
             __bind_key__ = 'two'
-            id = Column(Integer, primary_key=True)
-            name = Column(String(128))
+            id: Mapped[int] = mapped_column(primary_key=True)
+            name: Mapped[str]
             addresses = relationship('Address', back_populates='user')
 
         class Address(db.Model):
             __bind_key__ = 'two'
-            id = Column(Integer, primary_key=True)
-            name = Column(String(128))
-            user_id = Column(Integer, ForeignKey('user2.id'))
+            id: Mapped[int] = mapped_column(primary_key=True)
+            name: Mapped[str]
+            user_id: Mapped[int] = mapped_column(ForeignKey('user2.id'))
             user = relationship('User2', back_populates='addresses')
 
         await db.create_all()
@@ -166,20 +166,20 @@ class TestAio(unittest.TestCase):
         class User1(db.Model):
             __tablename__ = 'users'
             __bind_key__ = 'one'
-            id = Column(Integer, primary_key=True)
-            name = Column(String(128))
+            id: Mapped[int] = mapped_column(primary_key=True)
+            name: Mapped[str]
 
         class User2(db.Model):
             __bind_key__ = 'two'
-            id = Column(Integer, primary_key=True)
-            name = Column(String(128))
+            id: Mapped[int] = mapped_column(primary_key=True)
+            name: Mapped[str]
             addresses = relationship('Address', back_populates='user')
 
         class Address(db.Model):
             __bind_key__ = 'two'
-            id = Column(Integer, primary_key=True)
-            name = Column(String(128))
-            user_id = Column(Integer, ForeignKey('user2.id'))
+            id: Mapped[int] = mapped_column(primary_key=True)
+            name: Mapped[str]
+            user_id: Mapped[int] = mapped_column(ForeignKey('user2.id'))
             user = relationship('User2', back_populates='addresses')
 
         await db.create_all()

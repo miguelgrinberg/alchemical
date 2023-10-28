@@ -1,18 +1,20 @@
-from sqlalchemy import Column, Integer, String
-from alchemical.aio import Alchemical
+from typing import Optional
+from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column
+from alchemical.aio import Alchemical, Model
 
 db = Alchemical('sqlite:///users.sqlite', binds={
     'groups': 'sqlite:///groups.sqlite'
 })
 
 
-class User(db.Model):
-    id = Column(Integer, primary_key=True)
-    name = Column(String(128))
+class User(Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[Optional[str]] = mapped_column(String(128))
 
 
-class Group(db.Model):
+class Group(Model):
     __bind_key__ = 'groups'
     __tablename__ = 'groups'
-    id = Column(Integer, primary_key=True)
-    name = Column(String(128))
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[Optional[str]] = mapped_column(String(128))

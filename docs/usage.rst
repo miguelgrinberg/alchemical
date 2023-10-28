@@ -32,14 +32,14 @@ Defining Database Models
 When working with Alchemical, models are created according to SQLAlchemy's
 rules, using ``Model`` as the base class::
 
-    from sqlalchemy import Column, Integer, String, ForeignKey
+    from sqlalchemy.orm import Mapped, mapped_column
     from alchemical import Model
 
     class User(Model):
-        id = Column(Integer, primary_key=True)
-        name = Column(String)
-        fullname = Column(String)
-        nickname = Column(String)
+        id: Mapped[int] = mapped_column(primary_key=True)
+        name: Mapped[str]
+        fullname = Mapped[str]
+        nickname = Mapped[str]
 
 See `Declarative Mapping <https://docs.sqlalchemy.org/en/14/orm/mapping_styles.html#declarative-mapping>`_
 in the SQLAlchemy documentation.
@@ -51,10 +51,10 @@ naming, a ``__tablename__`` attribute can be added to the model class::
     class User(Model):
         __tablename__ = 'users'
 
-        id = Column(Integer, primary_key=True)
-        name = Column(String)
-        fullname = Column(String)
-        nickname = Column(String)
+        id: Mapped[int] = mapped_column(primary_key=True)
+        name: Mapped[str]
+        fullname = Mapped[str]
+        nickname = Mapped[str]
 
 Creating and Destroying Database Tables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -130,10 +130,10 @@ to with the ``__bind_key__`` attribute::
     class User(Model):
         __bind_key__ = 'users'
 
-        id = Column(Integer, primary_key=True)
-        name = Column(String)
-        fullname = Column(String)
-        nickname = Column(String)
+        id: Mapped[int] = mapped_column(primary_key=True)
+        name: Mapped[str]
+        fullname = Mapped[str]
+        nickname = Mapped[str]
 
 To avoid duplicating the ``__bind_key__`` attribute in many model classes, you
 can create an abstract parent class for each bind::
@@ -143,10 +143,10 @@ can create an abstract parent class for each bind::
         __bind_key__ = 'users'
 
     class User(UsersBind):
-        id = Column(Integer, primary_key=True)
-        name = Column(String)
-        fullname = Column(String)
-        nickname = Column(String)
+        id: Mapped[int] = mapped_column(primary_key=True)
+        name: Mapped[str]
+        fullname = Mapped[str]
+        nickname = Mapped[str]
 
 The ``Alchemical`` instance can also be configured to combine the use of a main
 database and binds. The following example connects to a MySQL database as the
@@ -310,14 +310,13 @@ a dedicated extension.
 Example::
 
     from fastapi import FastAPI
-    from sqlalchemy import Column, Integer, String
+    from sqlalchemy import String
+    from sqlalchemy.orm import Mapped, mapped_column
     from alchemical.aio import Alchemical, Model
 
-
     class User(Model):
-        id = Column(Integer, primary_key=True)
-        name = Column(String(128))
-
+        id: Mapped[int] = mapped_column(primary_key=True)
+        name: Mapped[str] = mapped_column(String(64))
 
     app = FastAPI()
     db = Alchemical('sqlite:///app.db')

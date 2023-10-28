@@ -1,15 +1,6 @@
 from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import create_async_engine
-
-try:
-    from sqlalchemy.ext.asyncio import async_sessionmaker  # only in 2.0+
-except ImportError:  # pragma: no cover
-    from sqlalchemy.ext.asyncio import AsyncSession
-    from sqlalchemy.orm import sessionmaker
-
-    def async_sessionmaker(*args, **kwargs):
-        return sessionmaker(*args, **kwargs, class_=AsyncSession)
-
+from sqlalchemy.ext.asyncio import async_sessionmaker  # only in 2.0+
 from sqlalchemy.util.concurrency import greenlet_spawn
 from .core import BaseAlchemical, Alchemical as SyncAlchemical, \
     Model  # noqa: F401

@@ -2,8 +2,7 @@ import sqlite3
 import unittest
 from flask import Flask
 import pytest
-from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import clear_mappers
+from sqlalchemy.orm import Mapped, mapped_column, clear_mappers
 from alchemical.flask import Alchemical, Model
 
 
@@ -20,8 +19,8 @@ class TestFlask(unittest.TestCase):
         db = Alchemical()
 
         class User(db.Model):
-            id = Column(Integer, primary_key=True)
-            name = Column(String(128))
+            id: Mapped[int] = mapped_column(primary_key=True)
+            name: Mapped[str]
 
         app = Flask(__name__)
         app.config['ALCHEMICAL_DATABASE_URL'] = 'sqlite://'
@@ -64,19 +63,19 @@ class TestFlask(unittest.TestCase):
         db = Alchemical()
 
         class User(db.Model):
-            id = Column(Integer, primary_key=True)
-            name = Column(String(128))
+            id: Mapped[int] = mapped_column(primary_key=True)
+            name: Mapped[str]
 
         class User1(db.Model):
             __tablename__ = 'users1'
             __bind_key__ = 'one'
-            id = Column(Integer, primary_key=True)
-            name = Column(String(128))
+            id: Mapped[int] = mapped_column(primary_key=True)
+            name: Mapped[str]
 
         class User2(db.Model):
             __bind_key__ = 'two'
-            id = Column(Integer, primary_key=True)
-            name = Column(String(128))
+            id: Mapped[int] = mapped_column(primary_key=True)
+            name: Mapped[str]
 
         app = Flask(__name__)
         app.config['ALCHEMICAL_DATABASE_URL'] = 'sqlite://'
@@ -136,8 +135,8 @@ class TestFlask(unittest.TestCase):
         db = Alchemical()
 
         class User(db.Model):
-            id = Column(Integer, primary_key=True)
-            name = Column(String(128))
+            id: Mapped[int] = mapped_column(primary_key=True)
+            name: Mapped[str]
 
         db = self.create_db()
         app = Flask(__name__)
@@ -166,8 +165,8 @@ class TestFlask(unittest.TestCase):
         db = Alchemical()
 
         class User(db.Model):
-            id = Column(Integer, primary_key=True)
-            name = Column(String(128))
+            id: Mapped[int] = mapped_column(primary_key=True)
+            name: Mapped[str]
 
         db = self.create_db()
         app = Flask(__name__)

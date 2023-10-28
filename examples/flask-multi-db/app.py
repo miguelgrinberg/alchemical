@@ -1,18 +1,19 @@
 from flask import Flask
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column
 from alchemical.flask import Alchemical, Model
 from flask_migrate import Migrate
 
 
 class User(Model):
-    id = Column(Integer, primary_key=True)
-    name = Column(String(128))
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(128))
 
 
 class Group(Model):
     __bind_key__ = 'db1'
-    id = Column(Integer, primary_key=True)
-    name = Column(String(128))
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(128))
 
 
 app = Flask(__name__)

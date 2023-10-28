@@ -18,17 +18,16 @@ a few users, and finally prints the users to the console.
 
 ::
 
-    from sqlalchemy import Column, Integer, String
+    from sqlalchemy import String
+    from sqlalchemy.orm import Mapped, mapped_column
     from alchemical import Alchemical, Model
 
-
     class User(Model):
-        id = Column(Integer, primary_key=True)
-        name = Column(String(128))
+        id: Mapped[int] = mapped_column(primary_key=True)
+        name: Mapped[str] = mapped_column(String(128))
 
         def __repr__(self):
             return f'<User {self.name}'
-
 
     db = Alchemical('sqlite:///users.sqlite')
     db.drop_all()
@@ -44,16 +43,16 @@ a few users, and finally prints the users to the console.
 The next example implements the same application, but using ``asyncio``::
 
     import asyncio
-    from sqlalchemy import Column, Integer, String
+    from sqlalchemy import String
+    from sqlalchemy.orm import Mapped, mapped_column
     from alchemical.aio import Alchemical, Model
 
     class User(Model):
-        id = Column(Integer, primary_key=True)
-        name = Column(String(128))
+        id: Mapped[int] = mapped_column(primary_key=True)
+        name: Mapped[str] = mapped_column(String(128))
 
         def __repr__(self):
             return f'<User {self.name}'
-
 
     async def main():
         db = Alchemical('sqlite:///users.sqlite')
@@ -66,6 +65,5 @@ The next example implements the same application, but using ``asyncio``::
 
         async with db.Session() as session:
             print((await session.scalars(User.select())).all())
-
 
     asyncio.run(main())

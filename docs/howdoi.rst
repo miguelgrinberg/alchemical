@@ -11,12 +11,13 @@ instance has been created and stored in a global variable named ``db``.
 The ``Alchemical`` package provides a ``Model`` class to be used as a base
 class for database models::
 
-    from sqlalchemy import Column, Integer, String
+    from sqlalchemy import String
+    from sqlalchemy.orm import Mapped, mapped_column
     from alchemical import Model
 
     class User(Model):
-        id = Column(Integer, primary_key=True)
-        name = Column(String(128))
+        id: Mapped[int] = mapped_column(primary_key=True)
+        name: Mapped[str] = mapped_column(String(128))
 
 The base ``Model`` class is also accessible as a ``db.Model`` attribute of the
 ``Alchemical`` instance.

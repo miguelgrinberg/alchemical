@@ -1,15 +1,16 @@
+from datetime import datetime
 from werkzeug.security import check_password_hash
 from werkzeug.security import generate_password_hash
 from flask import url_for
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, func
-from sqlalchemy.orm import relationship
+from sqlalchemy import ForeignKey, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from alchemical import Model
 
 
 class User(Model):
-    id = Column(Integer, primary_key=True)
-    username = Column(String, unique=True, nullable=False)
-    password_hash = Column(String, nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    username: Mapped[str] = mapped_column(unique=True)
+    password_hash: Mapped[str]
 
     @property
     def password(self):
@@ -25,13 +26,12 @@ class User(Model):
 
 
 class Post(Model):
-    id = Column(Integer, primary_key=True)
-    author_id = Column(ForeignKey(User.id), nullable=False)
-    created = Column(
-        DateTime, nullable=False, server_default=func.current_timestamp()
-    )
-    title = Column(String, nullable=False)
-    body = Column(String, nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    author_id: Mapped[int] = mapped_column(ForeignKey(User.id))
+    created: Mapped[datetime] = mapped_column(
+        server_default=func.current_timestamp())
+    title: Mapped[str]
+    body: Mapped[str]
 
     # User object backed by author_id
     # lazy="joined" means the user is returned with the post in one query

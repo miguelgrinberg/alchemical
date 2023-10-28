@@ -1,13 +1,14 @@
 import asyncio
 import sys
 from fastapi import FastAPI
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column
 from alchemical.aio import Alchemical, Model
 
 
 class User(Model):
-    id = Column(Integer, primary_key=True)
-    name = Column(String(128))
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(128))
 
 
 app = FastAPI()
