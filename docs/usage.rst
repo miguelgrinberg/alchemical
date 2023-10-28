@@ -135,9 +135,22 @@ to with the ``__bind_key__`` attribute::
         fullname = Column(String)
         nickname = Column(String)
 
-It is also possible to combine the use of a main database and binds. The
-following example connects to a MySQL database as the main database, plus
-the Postgres and SQLite databases of the previous example::
+To avoid duplicating the ``__bind_key__`` attribute in many model classes, you
+can create an abstract parent class for each bind::
+
+    class UsersBind(Model):
+        __abstract__ = True
+        __bind_key__ = 'users'
+
+    class User(UsersBind):
+        id = Column(Integer, primary_key=True)
+        name = Column(String)
+        fullname = Column(String)
+        nickname = Column(String)
+
+The ``Alchemical`` instance can also be configured to combine the use of a main
+database and binds. The following example connects to a MySQL database as the
+main database, plus the Postgres and SQLite databases of the previous example::
 
     db = Alchemical('mysqldb://user:password@localhost/db', binds={
         'users': 'postgresql://user:password@localhost/mydb',
@@ -150,42 +163,15 @@ have a ``__bind_key__`` attribute are assigned to the main database.
 Asyncio Support
 ~~~~~~~~~~~~~~~
 
-SQLAlchemy 1.4 has full support for the asyncio package. Alchemical provides
+SQLAlchemy 2.0 has full support for the asyncio package. Alchemical provides
 an async-enabled database instance that can be imported from
 ``alchemical.aio``::
 
     from alchemical.aio import Alchemical
 
 When using the async version of the ``Alchemical`` class many of the methods
-and context-managers are async and need to be awaited, but other than this
-there are no differences.
-
-Using Pydantic Models
-~~~~~~~~~~~~~~~~~~~~~
-
-.. note::Pydantic and SQLModel are currently not supported
-
-    This section is outdated. The SQLModel project does not support
-    SQLAlchemy 2.0 at this time, so it is incompatible with Alchemical, which
-    has dropped support for previous SQLAlchemy versions. Reinstating Pydantic
-    and SQLModel support will be evaluated once these project add compatibility
-    with SQLAlchemy 2.0.
-
-Alchemical supports the use of model classes based on
-`Pydantic <https://pydantic-docs.helpmanual.io/>`_ with the
-`SQLModel <https://sqlmodel.tiangolo.com/>`_ package. To take advantage of
-this option, pass ``model_class=SQLModel`` when constructing the ``Alchemical``
-instance::
-
-    from typing import Optional
-    from sqlmodel import Field, SQLModel
-    from alchemical import Alchemical
-
-    db = Alchemical('sqlite:///users.sqlite', model_class=SQLModel)
-
-    class User(db.Model, table=True):
-        id: Optional[int] = Field(default=None, primary_key=True)
-        name: str = Field(max_length=128)
+and context-managers are asynchronous and need to be awaited, but other than
+this there are no differences.
 
 .. _database-migrations-with-alembic:
 
@@ -305,10 +291,14 @@ Refer to the Flask-Migrate documentation for instructions. The Alchemical
 
 As an alternative, you can follow the instructions to set up
 :ref:`Database Migrations with Alembic <database-migrations-with-alembic>` in
-this documentation instead of using Flask-Migrate. If you opt to work with
-Alembic in this way and your Flask application uses the application factory
-pattern, a Flask application instance must be created, for example in *env.py*,
-so that the ``Alchemical`` object can access its configuration.
+this documentation instead of using the Flask-Migrate extension.
+
+If you opt to work with Alembic without Flask-Migrate, be aware that the ``db``
+instance must be fully initialized with a Flask application instance, so that
+it has access to the database configuration stored in the Flask ``config``
+object. If your Flask application uses the application factory pattern, you may
+need to call your factory function in the *env.py* file to force this
+initialization.
 
 Using with FastAPI
 ~~~~~~~~~~~~~~~~~~
