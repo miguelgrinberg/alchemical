@@ -16,6 +16,7 @@ def async_test(f):
 
 class TestAio(unittest.TestCase):
     def setUp(self):
+        Model.metadata.clear()
         Model.__metadatas__.clear()
         clear_mappers()
 
@@ -29,6 +30,7 @@ class TestAio(unittest.TestCase):
             name: Mapped[str]
 
         await db.create_all()
+        assert db.metadatas[None] == db.Model.metadata
         assert db.metadatas[None] == User.metadata
 
         async with db.begin() as session:

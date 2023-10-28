@@ -31,9 +31,13 @@ class BaseModel:
 
     def __init_subclass__(cls, **kwargs):
         bind_key = getattr(cls, '__bind_key__', None)
-        if bind_key not in cls.__metadatas__:
-            cls.__metadatas__[bind_key] = MetaData()
-        cls.metadata = cls.__metadatas__[bind_key]
+        if bind_key is not None:
+            if bind_key not in cls.__metadatas__:
+                cls.__metadatas__[bind_key] = MetaData()
+            cls.metadata = cls.__metadatas__[bind_key]
+        elif None not in cls.__metadatas__ and \
+                getattr(cls, 'metadata', None) is not None:
+            cls.__metadatas__[None] = cls.metadata
         super().__init_subclass__(**kwargs)
 
     @classmethod

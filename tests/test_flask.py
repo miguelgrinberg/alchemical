@@ -8,6 +8,7 @@ from alchemical.flask import Alchemical, Model
 
 class TestFlask(unittest.TestCase):
     def setUp(self):
+        Model.metadata.clear()
         Model.__metadatas__.clear()
         clear_mappers()
 

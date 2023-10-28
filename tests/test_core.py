@@ -14,6 +14,7 @@ class TestCore(unittest.TestCase):
         else:
             db = Alchemical()
             db.initialize(url, binds=binds)
+        db.Model.metadata.clear()
         db.Model.__metadatas__.clear()
         clear_mappers()
         return db
@@ -27,6 +28,7 @@ class TestCore(unittest.TestCase):
             name: Mapped[str]
 
         db.create_all()
+        assert db.metadatas[None] == db.Model.metadata
         assert db.metadatas[None] == User.metadata
 
         with db.begin() as session:
