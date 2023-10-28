@@ -1,3 +1,4 @@
+from random import randint
 from flask import Flask
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
@@ -25,6 +26,6 @@ def index():
 
 @app.cli.command()
 def add():
-    """Add test user."""
+    """Add a test user."""
     with db.begin() as session:
-        session.add(User(name='test'))
+        session.add(User(name=f'user{randint(0, 9999)}'))

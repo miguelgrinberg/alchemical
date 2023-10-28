@@ -1,4 +1,5 @@
 import asyncio
+from random import randint
 import sys
 from fastapi import FastAPI
 from sqlalchemy import String
@@ -33,8 +34,8 @@ async def index():
 async def add():
     """Add test user and group."""
     async with db.begin() as session:
-        session.add(User(name='test'))
-        session.add(Group(name='group'))
+        session.add(User(name=f'user{randint(0, 9999)}'))
+        session.add(Group(name=f'group{randint(0, 9999)}'))
 
 
 arg = sys.argv[1] if len(sys.argv) > 1 else None
