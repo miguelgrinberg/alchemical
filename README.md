@@ -5,7 +5,7 @@ Modern SQLAlchemy simplified.
 
 ## Resources
 
-- [Documentation](http://alchemical.readthedocs.io/en/latest/)
+- [Documentation](http://alchemical.readthedocs.io/en/stable/)
 - [PyPI](https://pypi.python.org/pypi/alchemical)
 - [Change Log](https://github.com/miguelgrinberg/alchemical/blob/main/CHANGES.md)
 
