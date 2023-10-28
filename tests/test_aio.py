@@ -4,8 +4,7 @@ import unittest
 import pytest
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship, clear_mappers
-from alchemical.aio import Alchemical
-from alchemical.core import MetadataCollection
+from alchemical.aio import Alchemical, Model
 
 
 def async_test(f):
@@ -17,7 +16,7 @@ def async_test(f):
 
 class TestAio(unittest.TestCase):
     def setUp(self):
-        MetadataCollection.reset()
+        Model.__metadatas__.clear()
         clear_mappers()
 
     @async_test
@@ -30,7 +29,7 @@ class TestAio(unittest.TestCase):
             name = Column(String(128))
 
         await db.create_all()
-        assert db.metadata == db.Model.metadata
+        assert db.metadatas[None] == User.metadata
 
         async with db.begin() as session:
             for name in ['mary', 'joe', 'susan']:
@@ -94,7 +93,9 @@ class TestAio(unittest.TestCase):
 
         await db.create_all()
         assert db.bind_names() == ['one', 'two']
-        assert db.metadata.tables.keys() == {'users', 'user2', 'address'}
+        assert db.metadatas[None].tables.keys() == {'users'}
+        assert db.metadatas['one'].tables.keys() == {'users'}
+        assert db.metadatas['two'].tables.keys() == {'user2', 'address'}
 
         async with db.begin() as session:
             user = User(name='main')
@@ -183,7 +184,9 @@ class TestAio(unittest.TestCase):
 
         await db.create_all()
         assert db.bind_names() == ['one', 'two']
-        assert db.metadata.tables.keys() == {'users', 'user2', 'address'}
+        assert None not in db.metadatas
+        assert db.metadatas['one'].tables.keys() == {'users'}
+        assert db.metadatas['two'].tables.keys() == {'user2', 'address'}
         assert db.get_engine() is None
         await db.drop_all()
 

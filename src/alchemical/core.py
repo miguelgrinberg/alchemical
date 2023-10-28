@@ -25,27 +25,17 @@ class TableNamer:  # pragma: no cover
         return getattr(type, '__tablename__', None)
 
 
-class MetadataCollection:
-    """A class that maintains metadata objects for each bind and returns the
-    appropriate metadata for each model."""
-    metadatas = {}
-
-    def __get__(self, obj, type):
-        if type.__dict__.get('__metadata__') is None:
-            bind_key = getattr(type, '__bind_key__', None)
-            if bind_key not in self.metadatas:
-                self.metadatas[bind_key] = MetaData()
-            type.__metadata__ = self.metadatas[bind_key]
-        return type.__metadata__
-
-    @classmethod
-    def reset(cls):
-        cls.metadatas = {}
-
-
 class BaseModel:
     """This is the base model class from where all models inherit from."""
+    __metadatas__ = {}
     __tablename__ = TableNamer()
+
+    def __init_subclass__(cls, **kwargs):
+        bind_key = getattr(cls, '__bind_key__', None)
+        if bind_key not in cls.__metadatas__:
+            cls.__metadatas__[bind_key] = MetaData()
+        cls.metadata = cls.__metadatas__[bind_key]
+        super().__init_subclass__(**kwargs)
 
     @classmethod
     def select(cls):
@@ -80,7 +70,6 @@ class BaseModel:
 
 class Model(BaseModel, DeclarativeBase):
     __abstract__ = True
-    metadata = MetadataCollection()
 
 
 class BaseAlchemical:
@@ -137,7 +126,6 @@ class BaseAlchemical:
             # we create a subclass of it with them
             class AlchemicalModel(BaseModel, model_class):
                 __abstract__ = True
-                metadata = MetadataCollection()
 
             return AlchemicalModel
         return model_class
@@ -153,14 +141,14 @@ class BaseAlchemical:
             self.engines[None] = self._create_engine(
                 self._fix_url(self.url), **options)
         self.table_binds = {}
-        for bind, url in (self.binds or {}).items():
+        for bind_key, url in (self.binds or {}).items():
             options = (self.engine_options if not callable(self.engine_options)
-                       else self.engine_options(bind))
+                       else self.engine_options(bind_key))
             options.setdefault('future', True)
-            self.engines[bind] = self._create_engine(
+            self.engines[bind_key] = self._create_engine(
                 self._fix_url(url), **options)
-            for table in self.metadatas[bind].tables.values():
-                self.table_binds[table] = self.engines[bind]
+            for table in self.Model.__metadatas__[bind_key].tables.values():
+                self.table_binds[table] = self.engines[bind_key]
 
     def _fix_url(self, url):
         for prefix, updated_prefix in self.prefix_map.items():
@@ -170,24 +158,8 @@ class BaseAlchemical:
         return url
 
     @property
-    def metadata(self):
-        # Only for compatibility with Flask-SQLAlchemy.
-
-        # The MetadataCollector.metadatas dictionary indexed by bind should be
-        # preferred.
-        if self.binds is None or len(self.binds) == 0:
-            return self.Model.metadata
-
-        # Flask-SQLAlchemy puts all the binds in a single metadata instance
-        m = MetaData()
-        for metadata in self.metadatas.values():
-            for table in metadata.tables.values():
-                table.to_metadata(m)
-        return m
-
-    @property
     def metadatas(self):
-        return MetadataCollection.metadatas
+        return self.Model.__metadatas__
 
     def get_engine(self, bind=None):
         """Return the SQLAlchemy engine object.
@@ -252,8 +224,8 @@ class Alchemical(BaseAlchemical):
         engine = self.get_engine()
         if engine:
             self.metadatas[None].create_all(engine)
-        for bind in self.binds or {}:
-            self.metadatas[bind].create_all(self.get_engine(bind))
+        for bind_key in self.binds or {}:
+            self.metadatas[bind_key].create_all(self.get_engine(bind_key))
 
     def drop_all(self):
         """Drop all the database tables.
@@ -264,8 +236,8 @@ class Alchemical(BaseAlchemical):
         engine = self.get_engine()
         if engine:
             self.metadatas[None].drop_all(engine)
-        for bind in self.binds or {}:
-            self.metadatas[bind].drop_all(self.get_engine(bind))
+        for bind_key in self.binds or {}:
+            self.metadatas[bind_key].drop_all(self.get_engine(bind_key))
 
     @property
     def Session(self):

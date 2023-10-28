@@ -3,22 +3,19 @@ import unittest
 import pytest
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship, declarative_base, clear_mappers
-from alchemical import Alchemical
-from alchemical.core import MetadataCollection
+from alchemical import Alchemical, Model
 
 
 class TestCore(unittest.TestCase):
-    def setUp(self):
-        MetadataCollection.reset()
-        clear_mappers()
-
     def create_alchemical(self, url=None, binds=None):
         if not binds:
-            return Alchemical(url)
+            db = Alchemical(url)
         else:
             db = Alchemical()
             db.initialize(url, binds=binds)
-            return db
+        db.Model.__metadatas__.clear()
+        clear_mappers()
+        return db
 
     def test_read_write(self):
         db = self.create_alchemical('sqlite://')
@@ -29,7 +26,7 @@ class TestCore(unittest.TestCase):
             name = Column(String(128))
 
         db.create_all()
-        assert db.metadata == db.Model.metadata
+        assert db.metadatas[None] == User.metadata
 
         with db.begin() as session:
             for name in ['mary', 'joe', 'susan']:
@@ -91,7 +88,9 @@ class TestCore(unittest.TestCase):
 
         db.create_all()
         assert db.bind_names() == ['one', 'two']
-        assert db.metadata.tables.keys() == {'users', 'user2', 'address'}
+        assert db.metadatas[None].tables.keys() == {'users'}
+        assert db.metadatas['one'].tables.keys() == {'users'}
+        assert db.metadatas['two'].tables.keys() == {'user2', 'address'}
 
         with db.begin() as session:
             user = User(name='main')
@@ -170,7 +169,9 @@ class TestCore(unittest.TestCase):
 
         db.create_all()
         assert db.bind_names() == ['one', 'two']
-        assert db.metadata.tables.keys() == {'users', 'user2', 'address'}
+        assert None not in db.metadatas
+        assert db.metadatas['one'].tables.keys() == {'users'}
+        assert db.metadatas['two'].tables.keys() == {'user2', 'address'}
         assert db.get_engine() is None
         db.drop_all()
 
@@ -190,7 +191,10 @@ class TestCoreWithCustomBase(TestCore):
                 return 42
 
         Model = declarative_base(cls=CustomModel)
-        return Alchemical(url, binds=binds, model_class=Model)
+        db = Alchemical(url, binds=binds, model_class=Model)
+        db.Model.__metadatas__.clear()
+        clear_mappers()
+        return db
 
     def test_custom_model(self):
         db = self.create_alchemical('sqlite://')

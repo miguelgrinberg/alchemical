@@ -1,10 +1,13 @@
 from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column
 from alchemical import Alchemical, Model
+
+
 
 class User(Model):
     __bind_key__ = 'users'
-    id = Column(Integer, primary_key=True)
-    name = Column(String(128))
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(128))
 
     def __repr__(self):
         return f'<User {self.name}>'
@@ -12,8 +15,8 @@ class User(Model):
 
 class Group(Model):
     __bind_key__ = 'groups'
-    id = Column(Integer, primary_key=True)
-    name = Column(String(128))
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(128))
 
     def __repr__(self):
         return f'<Group {self.name}>'

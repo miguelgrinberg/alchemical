@@ -3,6 +3,7 @@ from sqlalchemy import Column, Integer, String
 from alchemical.flask import Alchemical, Model
 from flask_migrate import Migrate
 
+
 class User(Model):
     id = Column(Integer, primary_key=True)
     name = Column(String(128))

@@ -4,13 +4,12 @@ from flask import Flask
 import pytest
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import clear_mappers
-from alchemical.flask import Alchemical
-from alchemical.core import MetadataCollection
+from alchemical.flask import Alchemical, Model
 
 
 class TestFlask(unittest.TestCase):
     def setUp(self):
-        MetadataCollection.reset()
+        Model.__metadatas__.clear()
         clear_mappers()
 
     def create_db(self):
