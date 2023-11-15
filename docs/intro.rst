@@ -27,7 +27,7 @@ a few users, and finally prints the users to the console.
         name: Mapped[str] = mapped_column(String(128))
 
         def __repr__(self):
-            return f'<User {self.name}'
+            return f'<User {self.name}>'
 
     db = Alchemical('sqlite:///users.sqlite')
     db.drop_all()
@@ -52,7 +52,7 @@ The next example implements the same application, but using ``asyncio``::
         name: Mapped[str] = mapped_column(String(128))
 
         def __repr__(self):
-            return f'<User {self.name}'
+            return f'<User {self.name}>'
 
     async def main():
         db = Alchemical('sqlite:///users.sqlite')
