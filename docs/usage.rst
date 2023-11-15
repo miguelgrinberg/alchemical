@@ -38,8 +38,8 @@ rules, using ``Model`` as the base class::
     class User(Model):
         id: Mapped[int] = mapped_column(primary_key=True)
         name: Mapped[str]
-        fullname = Mapped[str]
-        nickname = Mapped[str]
+        fullname: Mapped[str]
+        nickname: Mapped[str]
 
 See `Declarative Mapping <https://docs.sqlalchemy.org/en/14/orm/mapping_styles.html#declarative-mapping>`_
 in the SQLAlchemy documentation.
@@ -53,8 +53,8 @@ naming, a ``__tablename__`` attribute can be added to the model class::
 
         id: Mapped[int] = mapped_column(primary_key=True)
         name: Mapped[str]
-        fullname = Mapped[str]
-        nickname = Mapped[str]
+        fullname: Mapped[str]
+        nickname: Mapped[str]
 
 Creating and Destroying Database Tables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -132,8 +132,8 @@ to with the ``__bind_key__`` attribute::
 
         id: Mapped[int] = mapped_column(primary_key=True)
         name: Mapped[str]
-        fullname = Mapped[str]
-        nickname = Mapped[str]
+        fullname: Mapped[str]
+        nickname: Mapped[str]
 
 To avoid duplicating the ``__bind_key__`` attribute in many model classes, you
 can create an abstract parent class for each bind::
@@ -145,8 +145,8 @@ can create an abstract parent class for each bind::
     class User(UsersBind):
         id: Mapped[int] = mapped_column(primary_key=True)
         name: Mapped[str]
-        fullname = Mapped[str]
-        nickname = Mapped[str]
+        fullname: Mapped[str]
+        nickname: Mapped[str]
 
 The ``Alchemical`` instance can also be configured to combine the use of a main
 database and binds. The following example connects to a MySQL database as the
