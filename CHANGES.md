@@ -1,5 +1,11 @@
 # Alchemical change log
 
+**Release 1.0.2** - 2024-04-25
+
+- Forget database connections when `initialize()` is called [#17](https://github.com/miguelgrinberg/alchemical/issues/17) ([commit](https://github.com/miguelgrinberg/alchemical/commit/b1fe13b0c6db71328478c517ddbd5cec39c4ad06))
+- Fixing typos in documentation [#14](https://github.com/miguelgrinberg/alchemical/issues/14) [#15](https://github.com/miguelgrinberg/alchemical/issues/15) ([commit #1](https://github.com/miguelgrinberg/alchemical/commit/0baf28f57706971ad0e9f63f46d8629f1df13aa0) [commit #2](https://github.com/miguelgrinberg/alchemical/commit/50d363aa355ade07b3cabdad9fa39254567a5c9c)) (thanks **Frank Yu**!)
+- Dataclass example ([commit](https://github.com/miguelgrinberg/alchemical/commit/124b24a6b3ee2e89d68466280bd7117bf90da2ce))
+
 **Release 1.0.1** - 2023-10-29
 
 - Use default `MetaData()` object instead of creating a new one ([commit](https://github.com/miguelgrinberg/alchemical/commit/32c3a035b3a5e3b4d1fe2159cb9c711d7345d0c6))
