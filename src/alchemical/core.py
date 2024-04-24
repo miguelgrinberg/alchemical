@@ -119,6 +119,9 @@ class BaseAlchemical:
         self.binds = binds or self.binds
         self.engine_options = engine_options or self.engine_options
         self.session_options = session_options or self.session_options
+        self.session_class = None
+        self.engines = None
+        self.table_binds = None
 
     def _get_declarative_base(self, model_class):
         if model_class is None:

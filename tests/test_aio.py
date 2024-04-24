@@ -199,3 +199,22 @@ class TestAio(unittest.TestCase):
                       session_options={'baz': 'foo'})
         assert db.engine_options == {'foo': 'baz'}
         assert db.session_options == {'baz': 'foo'}
+
+    @async_test
+    async def test_reinitialize(self):
+        db = Alchemical('sqlite://')
+
+        class User(db.Model):
+            id: Mapped[int] = mapped_column(primary_key=True)
+            name: Mapped[str]
+
+        await db.create_all()
+        async with db.begin() as session:
+            for name in ['mary', 'joe', 'susan']:
+                session.add(User(name=name))
+
+        db.initialize('sqlite://')
+        await db.create_all()
+        async with db.Session() as session:
+            all = (await session.execute(User.select())).scalars().all()
+        assert len(all) == 0

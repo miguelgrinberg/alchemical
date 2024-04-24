@@ -50,6 +50,27 @@ class Alchemical(BaseAlchemical):
                          naming_convention=naming_convention)
         self._sync = None
 
+    def initialize(self, url=None, binds=None, engine_options=None,
+                   session_options=None):
+        """Initialize the database instance.
+
+        :param url: the database URL.
+        :param binds: a dictionary with additional databases to manage with
+                      this instance. The keys are the names, and the values are
+                      the database URLs. A model is then assigned to a specific
+                      bind with the `__bind_key__` class attribute.
+        :param engine_options: a dictionary with additional engine options to
+                               pass to SQLAlchemy.
+        :param session_options: a dictionary with additional session options to
+                                use when creating sessions.
+
+        This method must be called explicitly to complete the initialization of
+        the instance the two-phase initialization method is used.
+        """
+        super().initialize(url, binds=binds, engine_options=engine_options,
+                           session_options=session_options)
+        self._sync = None
+
     def _create_engine(self, url, *args, **kwargs):
         return create_async_engine(url, *args, **kwargs)
 

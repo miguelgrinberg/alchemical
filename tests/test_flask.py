@@ -12,10 +12,6 @@ class TestFlask(unittest.TestCase):
         Model.__metadatas__.clear()
         clear_mappers()
 
-    def create_db(self):
-        db = Alchemical()
-        return db
-
     def test_read_write(self):
         db = Alchemical()
 
@@ -139,7 +135,6 @@ class TestFlask(unittest.TestCase):
             id: Mapped[int] = mapped_column(primary_key=True)
             name: Mapped[str]
 
-        db = self.create_db()
         app = Flask(__name__)
         app.config['ALCHEMICAL_DATABASE_URL'] = 'sqlite://'
         db.init_app(app)
@@ -169,7 +164,6 @@ class TestFlask(unittest.TestCase):
             id: Mapped[int] = mapped_column(primary_key=True)
             name: Mapped[str]
 
-        db = self.create_db()
         app = Flask(__name__)
         app.config['ALCHEMICAL_DATABASE_URL'] = 'sqlite://'
         app.config['ALCHEMICAL_AUTOCOMMIT'] = True
@@ -185,6 +179,29 @@ class TestFlask(unittest.TestCase):
         with db.Session() as session:
             all = session.execute(User.select()).scalars().all()
         assert len(all) == 3
+
+    def test_reinit(self):
+        db = Alchemical()
+
+        class User(db.Model):
+            id: Mapped[int] = mapped_column(primary_key=True)
+            name: Mapped[str]
+
+        app = Flask(__name__)
+        app.config['ALCHEMICAL_DATABASE_URL'] = 'sqlite://'
+        db.init_app(app)
+        db.create_all()
+        with db.begin() as session:
+            for name in ['mary', 'joe', 'susan']:
+                session.add(User(name=name))
+
+        app = Flask(__name__)
+        app.config['ALCHEMICAL_DATABASE_URL'] = 'sqlite://'
+        db.init_app(app)
+        db.create_all()
+        with db.Session() as session:
+            all = session.execute(User.select()).scalars().all()
+        assert len(all) == 0
 
     def test_bad_config(self):
         db = Alchemical()

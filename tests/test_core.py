@@ -186,6 +186,24 @@ class TestCore(unittest.TestCase):
         assert db.engine_options == {'foo': 'baz'}
         assert db.session_options == {'baz': 'foo'}
 
+    def test_reinitialize(self):
+        db = self.create_alchemical('sqlite://')
+
+        class User(db.Model):
+            id: Mapped[int] = mapped_column(primary_key=True)
+            name: Mapped[str]
+
+        db.create_all()
+        with db.begin() as session:
+            for name in ['mary', 'joe', 'susan']:
+                session.add(User(name=name))
+
+        db.initialize('sqlite://')
+        db.create_all()
+        with db.Session() as session:
+            all = session.execute(User.select()).scalars().all()
+        assert len(all) == 0
+
 
 class TestCoreWithCustomBase(TestCore):
     def create_alchemical(self, url=None, binds=None):
