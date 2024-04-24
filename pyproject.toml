@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "alchemical"
-version = "1.0.2"
+version = "1.0.3.dev0"
 authors = [
     { name = "Miguel Grinberg", email = "miguel.grinberg@gmail.com" },
 ]
