@@ -31,6 +31,9 @@ Homepage = "https://github.com/miguelgrinberg/alchemical"
 "Bug Tracker" = "https://github.com/miguelgrinberg/alchemical/issues"
 
 [project.optional-dependencies]
+dev = [
+    "tox",
+]
 docs = [
     "sphinx",
 ]
