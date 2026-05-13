@@ -20,11 +20,24 @@ class CommandLine(AlembicCommandLine):  # pragma: no cover
             # behavior changed incompatibly in py3.3
             self.parser.error("too few arguments")
         else:
-            cfg = Config(
-                file_=options.config,
-                ini_section=options.name,
-                cmd_opts=options,
-            )
+            try:
+                toml, ini = self._inis_from_config(options)
+            except AttributeError:
+                toml = None
+                ini = options.config
+            if toml:
+                cfg = Config(
+                    file_=ini,
+                    toml_file=toml,
+                    ini_section=options.name,
+                    cmd_opts=options,
+                )
+            else:
+                cfg = Config(
+                    file_=options.config,
+                    ini_section=options.name,
+                    cmd_opts=options,
+                )
             self.run_cmd(cfg, options)
 
 
