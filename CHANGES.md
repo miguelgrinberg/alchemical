@@ -1,5 +1,9 @@
 # Alchemical change log
 
+**Release 1.0.3** - 2026-05-13
+
+- Apply configuration changes from Alembic ([commit](https://github.com/miguelgrinberg/alchemical/commit/faea73ec0d9ded4c7464ff02a6677306a3981f8f))
+
 **Release 1.0.2** - 2024-04-25
 
 - Forget database connections when `initialize()` is called [#17](https://github.com/miguelgrinberg/alchemical/issues/17) ([commit](https://github.com/miguelgrinberg/alchemical/commit/b1fe13b0c6db71328478c517ddbd5cec39c4ad06))
